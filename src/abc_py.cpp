@@ -1,62 +1,65 @@
 #include "abc_py.hpp"
 
-void update_part_PY(arma::vec &temp_part,
-                    arma::vec part,
-                    arma::mat param,
-                    arma::mat &tparam,
-                    double theta,
-                    double sigma,
-                    double m0,
-                    double k0,
-                    double a0,
-                    double b0){
+
+void update_urn(
+        arma::vec &part, int n_unique, double theta, double sigma,
+        arma::vec &tvec) {
+    // initialize
+    int n = part.n_elem;
+    tvec.fill(0.0);
+    tvec.head(n) = part;
+    int k = n_unique;
+
+    arma::vec uniq = unique(part);
+    int k_max = uniq.n_elem;
+    arma::vec tfreqs(k_max + n);
+    tfreqs.fill(0.0);
+
+    for(arma::uword j = 0; j < k_max; j++){
+      tfreqs(j) = arma::accu(part == uniq(j)) - sigma;
+    }
+
+    for(arma::uword i = n; i < 2 * n; i++){
+      double t_bound = arma::randu() * (i + theta);
+      int k = -1;
+      double accu_val = 0.0;
+
+      // loop
+      while(t_bound >= accu_val){
+        k += 1;
+        if(k == k_max){
+          break;
+        }
+        accu_val += tfreqs(k);
+      }
+
+      if(k < k_max){
+        tfreqs(k) += 1;
+        tvec(i) = k;
+      } else {
+        tfreqs(k) = 1 - sigma;
+        tvec(i) = k;
+        k_max += 1;
+      }
+    }
+
+}
+
+void update_part_PY_univ(
+        arma::vec &temp_part, arma::vec part, arma::mat param, arma::mat &tparam,
+        double theta, double sigma, double m0, double k0, double a0, double b0){
   // initialize
   int n = part.n_elem;
   arma::vec tvec(2 * n);
-  tvec.fill(0.0);
-  tvec.head(n) = part;
   int k = param.n_rows;
 
-  arma::vec uniq = unique(part);
-  int k_max = uniq.n_elem;
-  arma::vec tfreqs(k_max + n);
-  tfreqs.fill(0.0);
-
-  for(arma::uword j = 0; j < k_max; j++){
-    tfreqs(j) = arma::accu(part == uniq(j)) - sigma;
-  }
-
-  for(arma::uword i = n; i < 2 * n; i++){
-    double t_bound = arma::randu() * (i + theta);
-    int k = -1;
-    double accu_val = 0.0;
-
-    // loop
-    while(t_bound >= accu_val){
-      k += 1;
-      if(k == k_max){
-        break;
-      }
-      accu_val += tfreqs(k);
-    }
-
-    if(k < k_max){
-      tfreqs(k) += 1;
-      tvec(i) = k;
-    } else {
-      tfreqs(k) = 1 - sigma;
-      tvec(i) = k;
-      k_max += 1;
-    }
-  }
+  update_urn(part, k, theta, sigma, tvec);
 
   // take the tail of the vector tvec
   temp_part = tvec.tail(n);
   arma::vec uniq_temp = unique(temp_part);
   tparam.resize(uniq_temp.n_elem, 2);
 
-  // clean
-  int indx = 0;
   for(arma::uword j = 0; j < uniq_temp.n_elem; j++){
     if(uniq_temp(j) < k){
       temp_part(arma::find(temp_part == uniq_temp(j))).fill(j);
@@ -68,6 +71,40 @@ void update_part_PY(arma::vec &temp_part,
       tparam(j,0) = arma::randn() * sqrt(tparam(j,1) / k0) + m0;
     }
   }
+}
+
+
+void update_part_PY_multi(
+        arma::vec &temp_part, arma::vec part, std::vector<arma::vec> mean,
+        std::vector<arma::vec> &tmean, std::vector<arma::mat> prec,
+        std::vector<arma::mat> &tprec, double theta, double sigma,
+        const arma::vec &m0, double k0, double df,
+        const arma::mat& prior_prec_chol) {
+    // initialize
+    int n = part.n_elem;
+    arma::vec tvec(2 * n);
+    int k = mean.size();
+
+    update_urn(part, k, theta, sigma, tvec);
+
+    // take the tail of the vector tvec
+    temp_part = tvec.tail(n);
+    arma::vec uniq_temp = unique(temp_part);
+    tmean.resize(uniq_temp.n_elem);
+    tprec.resize(uniq_temp.n_elem);
+
+    for(arma::uword j = 0; j < uniq_temp.n_elem; j++){
+      if(uniq_temp(j) < k){
+        temp_part(arma::find(temp_part == uniq_temp(j))).fill(j);
+        tmean[j] = mean[uniq_temp[j]];
+        tprec[j] = prec[uniq_temp[j]];
+      } else {
+        temp_part(arma::find(temp_part == uniq_temp(j))).fill(j);
+        arma::mat chol_prec = rwishart_chol(df, prior_prec_chol);
+        tprec[j] = chol_prec;
+        tmean[j] = rnorm_prec_chol(m0, sqrt(k0) * chol_prec);
+      }
+    }
 }
 
 
@@ -117,7 +154,7 @@ std::tuple<arma::vec, arma::mat, double> ABC_MCMC(
 
   // main loop
   for(arma::uword iter = 0; iter < nrep; iter++){
-    update_part_PY(temp_part, part, param, tparam,
+    update_part_PY_univ(temp_part, part, param, tparam,
                    theta, sigma, m0, k0, a0, b0);
 
     // sample the synthetic data
@@ -147,8 +184,6 @@ std::tuple<arma::vec, arma::mat, double> ABC_MCMC(
     }
   }
   int end_s = clock();
-
-  std::cout << "part_results: \n"; part_results.print();
 
   // return the results
   return std::make_tuple(

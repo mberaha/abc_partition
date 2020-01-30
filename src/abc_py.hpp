@@ -2,17 +2,18 @@
 #include <tuple>
 #include "wasserstein.hpp"
 #include "distance.hpp"
+#include "distributions.hpp"
 
-void update_part_PY(arma::vec &temp_part,
-                    arma::vec part,
-                    arma::mat param,
-                    arma::mat &tparam,
-                    double theta,
-                    double sigma,
-                    double m0,
-                    double k0,
-                    double a0,
-                    double b0);
+void update_part_PY_univ(
+    arma::vec &temp_part, arma::vec part, arma::mat param, arma::mat &tparam,
+    double theta, double sigma, double m0, double k0, double a0, double b0);
+
+
+void update_part_PY_multi(
+    arma::vec &temp_part, arma::vec part, std::vector<arma::vec> mean,
+    std::vector<arma::vec> &tmean, std::vector<arma::mat> prec,
+    std::vector<arma::mat> &tprec, double theta, double sigma, double m0,
+    double k0, double a0, double b0);
 
 
 

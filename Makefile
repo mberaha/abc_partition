@@ -14,7 +14,9 @@ CFLAGS = \
 LDLIBS = -larmadillo
 LDFLAGS = -O3 -D_REENTRANT
 
-OUR_SRCS = $(SRC_DIR)/wasserstein.cpp $(SRC_DIR)/abc_py.cpp $(SRC_DIR)/distance.cpp
+OUR_SRCS = $(SRC_DIR)/wasserstein.cpp $(SRC_DIR)/abc_py.cpp $(SRC_DIR)/distance.cpp \
+					 $(SRC_DIR)/distributions.cpp
+
 OT_SRCS = $(wildcard $(OT_DIR)/*.cpp)
 SPIKES_SRCS = $(wildcard $(SPIKES_DIR)/*.cpp)
 
