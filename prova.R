@@ -1,3 +1,9 @@
+setwd("/home/mario/PhD/abc/abc_partition/")
+library(Rcpp)
+library(devtools)
+compileAttributes(pkgdir = ".", verbose = getOption("verbose"))
+load_all()
+
 res <- c()
 for(i in 1:1000000){
   res[i] <- sample_PY(values = c(0,0,0,1,1,2), theta = 1, sigma = 0.2)
