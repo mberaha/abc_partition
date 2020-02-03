@@ -4,9 +4,12 @@
 #include <armadillo>
 #include <string>
 #include "wasserstein.hpp"
+#include "ot/sinkhorn.hpp"
 
 class Distance {
 public:
+    virtual ~Distance() {}
+
     virtual std::tuple<arma::uvec, double> compute(
         const arma::mat &atoms_x, const arma::mat &atoms_y) = 0;
 };
@@ -30,6 +33,21 @@ protected:
 public:
     std::tuple<arma::uvec, double> compute(
         const arma::mat &real_data, const arma::mat &synth_data);
+};
+
+
+class UniformSinkhorn: public Distance {
+protected:
+    double eps = 0.1;
+    double threshold = 1e-1;
+    int max_iter = 1000;
+    int p = 1;
+
+    bool init_done = false;
+
+public:
+std::tuple<arma::uvec, double> compute(
+    const arma::mat &real_data, const arma::mat &synth_data);
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include <armadillo>
 #include <tuple>
 #include "src/abc_py.hpp"
+#include "src/abc_py_class.hpp"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -13,8 +14,10 @@ runAbcMCMC(std::vector<double> data, int nrep, double theta,
 
     arma::vec datavec = arma::conv_to<arma::vec>::from(data);
 
-    std::tuple<arma::vec, arma::mat, double> out = ABC_MCMC(
-        data, nrep, theta, sigma, m0, k0, a0, b0, eps, p, dist);
+    AbcPyUniv abc_mcm(datavec, theta, sigma, eps, a0, b0, k0, m0, dist);
+    std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
+    // std::tuple<arma::vec, arma::mat, double> out = ABC_MCMC_univ(
+    //     data, nrep, theta, sigma, m0, k0, a0, b0, eps, p, dist);
 
     int nrows = std::get<1>(out).n_rows;
     std::vector<std::vector<double>> parts(nrows);

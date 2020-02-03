@@ -58,8 +58,8 @@ void update_part_PY_univ(
   // take the tail of the vector tvec
   temp_part = tvec.tail(n);
   arma::vec uniq_temp = unique(temp_part);
-  tparam.resize(uniq_temp.n_elem, 2);
 
+  tparam.resize(uniq_temp.n_elem, 2);
   for(arma::uword j = 0; j < uniq_temp.n_elem; j++){
     if(uniq_temp(j) < k){
       temp_part(arma::find(temp_part == uniq_temp(j))).fill(j);
@@ -108,7 +108,7 @@ void update_part_PY_multi(
 }
 
 
-std::tuple<arma::vec, arma::mat, double> ABC_MCMC(
+std::tuple<arma::vec, arma::mat, double> ABC_MCMC_univ(
     arma::vec data, int nrep, double theta, double sigma, double m0,
     double k0, double a0, double b0, double eps0, int p,
     std::string dist) {
@@ -120,8 +120,8 @@ std::tuple<arma::vec, arma::mat, double> ABC_MCMC(
     d = new SortingDistance1d();
     data = arma::sort(data);
   }
-  else {
-
+  else if (dist == "sinkhorn"){
+    d = new UniformSinkhorn();
   }
 
   // initialize results
