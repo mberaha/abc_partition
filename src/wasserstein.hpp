@@ -7,8 +7,11 @@
 #include "./ot/emd.hpp"
 
 
-inline double lp_dist(arma::vec x, arma::vec y, int p=2) {
-    return arma::accu(arma::pow(arma::abs(x -y), p));
+inline double lp_dist(const arma::vec& x, const arma::vec& y, int p=2) {
+    if (p==1)
+        return arma::accu(arma::abs(x -y));
+    else
+        return arma::accu(arma::pow(arma::abs(x -y), p));
 }
 
 std::tuple<arma::umat, double, int> d_wasserstein(

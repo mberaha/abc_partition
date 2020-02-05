@@ -4,20 +4,17 @@
 //     return
 // }
 
-void sinkhorn(arma::vec weights_in, arma::vec weights_out,
-              arma::mat cost, double eps,
+void sinkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
+              const arma::mat &cost, double eps,
               double threshold, int max_iter, int norm_p, arma::mat* transport,
               double* dist) {
 
     arma::mat K = arma::exp(- cost / eps);
-    // std::cout << "K: \n" << K << std::endl;
     arma::vec inv_weights_in = arma::pow(weights_in, -1);
     arma::mat Kp(K.n_rows, K.n_cols);
 
     for (int i=0; i < K.n_rows; i++)
         Kp.row(i) = K.row(i) * inv_weights_in(i);
-
-    // std::cout << "Kp: \n" << Kp << std::endl;
 
     arma::vec KtransposeU;
     arma::vec u(weights_in.n_elem, arma::fill::ones);
@@ -38,11 +35,8 @@ void sinkhorn(arma::vec weights_in, arma::vec weights_out,
         uprev = u;
         vprev = v;
         KtransposeU = K.t() * u;
-        // std::cout << "KtransposeU: " << KtransposeU.t() << std::endl;
         v = weights_out / KtransposeU;
-        // std::cout << "v: " << v.t() << std::endl;
         u = arma::pow(Kp * v, -1);
-        // std::cout << "u: " << u.t() << std::endl;
         if  (int(i % 10) == 0) {
             // compute the right marginal
             tmp2 = arma::sum(diagmat(u) * K * diagmat(v), 0).t();
@@ -55,4 +49,17 @@ void sinkhorn(arma::vec weights_in, arma::vec weights_out,
     double d = arma::accu(*transport % cost);
     *dist = d;
     return;
+}
+
+
+void greenkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
+                const arma::mat &cost, double eps,
+                double threshold, int max_iter, int norm_p, arma::mat* transport,
+                double* dist) {
+    arma::mat K = arma::exp(- cost / eps);
+    arma::vec u(weights_in.n_elem);
+    u.fill(1.0 / weights_in.n_elem);
+
+    arma::vec v(weights_out.n_elem);
+    v.fill(1.0 / weights_out.n_elem);
 }

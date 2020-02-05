@@ -21,7 +21,7 @@ std::tuple<arma::umat, double, int> d_wasserstein(
     #pragma omp parallel for collapse(2)
     for (int i = 0; i < n1; ++i) {
         for (int j=0; j < n2; j++)
-           cost_mat(i, j) = lp_dist(atoms_x.row(i), atoms_s.row(j), p);
+           cost_mat(i, j) = lp_dist(atoms_x.row(i).t(), atoms_s.row(j).t(), p);
     }
 
     status = EMD_wrap(

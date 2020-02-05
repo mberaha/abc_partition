@@ -44,10 +44,19 @@ protected:
     int p = 1;
 
     bool init_done = false;
+    arma::vec w_in, w_out;
+    int n_in, n_out;
+    arma::mat cost_mat;
+    arma::mat transport;
+    arma::uvec perm;
 
 public:
 std::tuple<arma::uvec, double> compute(
     const arma::mat &real_data, const arma::mat &synth_data);
+
+void compute_cost(const arma::mat &real_data, const arma::mat &synth_data);
+
+void init(const arma::mat &real_data, const arma::mat &synth_data);
 };
 
 #endif

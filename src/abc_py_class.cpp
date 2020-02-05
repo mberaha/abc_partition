@@ -90,7 +90,7 @@ std::tuple<arma::vec, arma::mat, double> AbcPy::run(int nrep) {
 
         if(dist_results(iter) < eps){
           part = temp_part;
-          param = tparam;
+          saveCurrParam();
         }
     }
 
@@ -119,5 +119,33 @@ void AbcPyUniv::generateSyntData() {
     for(arma::uword j = 0; j < temp_part.n_elem; j++){
         data_synt(j) = arma::randn() *
             sqrt(tparam(temp_part(j),1)) + tparam(temp_part(j),0);
+    }
+}
+
+
+void AbcPyMultiv::updateParams() {
+    tmean.resize(uniq_temp.n_elem);
+    tprec_chol.resize(uniq_temp.n_elem);
+    int k = mean.size();
+
+    for(arma::uword j = 0; j < uniq_temp.n_elem; j++){
+        temp_part(arma::find(temp_part == uniq_temp(j))).fill(j);
+        if(uniq_temp(j) < k) {
+            tmean[j] = mean[uniq_temp[j]];
+            tprec_chol[j] = prec_chol[uniq_temp[j]];
+        } else {
+            arma::mat chol_prec = rwishart_chol(df, prior_prec_chol);
+            tprec_chol[j] = chol_prec;
+            tmean[j] = rnorm_prec_chol(m0, sqrt(k0) * chol_prec);
+        }
+    }
+}
+
+
+void AbcPyMultiv::generateSyntData() {
+    for(arma::uword j = 0; j < temp_part.n_elem; j++){
+        arma::vec currmean = tmean[temp_part(j)];
+        arma::mat currprec = tprec_chol[temp_part(j)];
+        data_synt.row(j) = rnorm_prec_chol(currmean, currprec).t();
     }
 }

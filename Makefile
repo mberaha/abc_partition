@@ -6,13 +6,13 @@ OT_DIR := $(SRC_DIR)/ot
 CXX = g++
 CFLAGS = \
 	-std=c++1y \
-	-O3 \
+	-g \
 	-MMD \
 	-I$(OT_DIR) \
 	-fPIC
 
 LDLIBS = -larmadillo
-LDFLAGS = -O3 -D_REENTRANT
+LDFLAGS = -g -D_REENTRANT
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
 OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp, $(OUR_SRCS_T))
