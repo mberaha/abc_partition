@@ -62,7 +62,7 @@ class AbcPyUniv: public AbcPy{
 
  public:
     AbcPyUniv(
-        arma::vec data, double theta, double sigma, double eps0,
+        arma::mat data, double theta, double sigma, double eps0,
         double a0, double b0, double k0, double m0, std::string distance):
             AbcPy(data, theta, sigma, eps0, distance),
             a0(a0), b0(b0), k0(k0), m0(m0) {
@@ -99,7 +99,7 @@ class AbcPyMultiv: public AbcPy{
 
  public:
     AbcPyMultiv(
-        const arma::mat& data, double theta, double sigma, double eps0,
+        arma::mat data, double theta, double sigma, double eps0,
         double df, const arma::mat& prior_prec_chol,
         double k0, const arma::vec& m0, std::string distance):
             AbcPy(data, theta, sigma, eps0, distance),

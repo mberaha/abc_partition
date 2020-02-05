@@ -1,10 +1,12 @@
 #include "abc_py_class.hpp"
+#include "Rcpp.h"
 
 AbcPy::AbcPy(
         arma::mat data, double theta, double sigma,
         double eps0, std::string distance):
             data(data), n_data(data.n_rows), theta(theta), sigma(sigma),
             eps0(eps0), data_synt(data) {
+    Rcpp::Rcout << "AbcPy" << std::endl;
     if (distance == "wasserstein")
       d = new UniformDiscreteWassersteinDistance();
     else if (distance == "sorting")
@@ -14,6 +16,9 @@ AbcPy::AbcPy(
     else if (distance == "greenkhorn")
       d = new UniformSinkhorn(true);
 
+    Rcpp::Rcout << "data.n_elem: " << data.n_elem << std::endl;
+    Rcpp::Rcout << "HERE2" << std::endl;
+    Rcpp::Rcout << "n_data: " << n_data << std::endl;
     part = arma::vec(n_data, arma::fill::zeros);
     temp_part = arma::vec(n_data, arma::fill::zeros);
 }
