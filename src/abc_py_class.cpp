@@ -10,7 +10,9 @@ AbcPy::AbcPy(
     else if (distance == "sorting")
       d = new SortingDistance1d();
     else if (distance == "sinkhorn")
-      d = new UniformSinkhorn();
+      d = new UniformSinkhorn(false);
+    else if (distance == "greenkhorn")
+      d = new UniformSinkhorn(true);
 
     part = arma::vec(n_data, arma::fill::zeros);
     temp_part = arma::vec(n_data, arma::fill::zeros);

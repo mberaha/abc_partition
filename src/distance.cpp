@@ -25,20 +25,17 @@ SortingDistance1d::compute(
 
 std::tuple<arma::uvec, double> UniformSinkhorn::compute(
         const arma::mat &real_data, const arma::mat &synth_data) {
-
     if (! init_done)
         init(real_data, synth_data);
 
     compute_cost(real_data, synth_data);
 
-    double dist=-10;
-    sinkhorn(w_in, w_out, cost_mat, eps, threshold, max_iter,
-             p, &transport, &dist);
+    dist=-10;
+    call();
 
     for (int i=0; i < n_out; i++) {
         perm(i) = transport.row(i).index_max();
     }
-
     return std::make_tuple(perm, dist);
 }
 

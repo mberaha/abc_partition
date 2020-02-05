@@ -49,14 +49,30 @@ protected:
     arma::mat cost_mat;
     arma::mat transport;
     arma::uvec perm;
+    double dist;
+
+    bool greedy = false;
 
 public:
+
+UniformSinkhorn(bool greedy = false): greedy(greedy) {}
+
 std::tuple<arma::uvec, double> compute(
     const arma::mat &real_data, const arma::mat &synth_data);
+
+void call() {
+    if (greedy)
+        greenkhorn(w_in, w_out, cost_mat, eps, threshold, max_iter,
+             p, &transport, &dist, true);
+    else
+        sinkhorn(w_in, w_out, cost_mat, eps, threshold, max_iter,
+             p, &transport, &dist);
+}
 
 void compute_cost(const arma::mat &real_data, const arma::mat &synth_data);
 
 void init(const arma::mat &real_data, const arma::mat &synth_data);
 };
+
 
 #endif

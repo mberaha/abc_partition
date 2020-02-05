@@ -119,9 +119,11 @@ std::tuple<arma::vec, arma::mat, double> ABC_MCMC_univ(
   else if (dist == "sorting") {
     d = new SortingDistance1d();
     data = arma::sort(data);
-  }
-  else if (dist == "sinkhorn"){
+  } else if (dist == "sinkhorn")
     d = new UniformSinkhorn();
+  else if (dist == "greenkhorn") {
+    std::cout << "HERE" << std::endl;
+    d = new UniformGreenkhorn();
   }
 
   // initialize results

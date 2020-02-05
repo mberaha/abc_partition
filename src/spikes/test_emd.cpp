@@ -50,7 +50,7 @@ int main() {
     double eps = 1e-3;
     double threshold = 1.0;
 
-    sinkhorn(weights_in, weights_out, cost_mat, eps, threshold, 100,
+    greenkhorn(weights_in, weights_out, cost_mat, eps, threshold, 100,
              1, &transport, &dist);
 
     std::cout << "distance: " << dist << std::endl;
@@ -59,7 +59,7 @@ int main() {
     std::cout << "Mappings: " << std::endl;
     for (int i=0; i < 10; i++) {
         int ind1 = transport.col(i).index_max();
-        std::cout << "y: " << synth_data.row(i).t() << ", Tx: " << real_data.row(ind1).t() << std::endl;
+        std::cout << "y: " << synth_data.row(i) << ", Tx: " << real_data.row(ind1) << std::endl;
     }
 
 
