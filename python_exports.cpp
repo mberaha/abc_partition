@@ -4,7 +4,6 @@
 
 #include <armadillo>
 #include <tuple>
-#include "src/abc_py.hpp"
 #include "src/abc_py_class.hpp"
 
 namespace py = pybind11;

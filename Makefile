@@ -6,13 +6,13 @@ OT_DIR := $(SRC_DIR)/ot
 CXX = g++
 CFLAGS = \
 	-std=c++1y \
-	-g \
+	-O3 \
 	-MMD \
 	-I$(OT_DIR) \
 	-fPIC
 
 LDLIBS = -larmadillo
-LDFLAGS = -g -D_REENTRANT
+LDFLAGS = -O3 -D_REENTRANT
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
 OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp, $(OUR_SRCS_T))
@@ -35,6 +35,9 @@ info:
 	@echo " OT_SRCS = $(OT_SRCS)"
 
 all: $(SPIKES_EXECS) generate_pybind
+
+generate_lib: $(OBJS)
+	g++ -shared $(OBJS) -o libabc.so $(LDLIBS)
 
 generate_pybind: $(OBJS)
 	$(CXX) -shared $(CFLAGS) `python3 -m pybind11 --includes` \

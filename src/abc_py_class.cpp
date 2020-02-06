@@ -1,12 +1,10 @@
 #include "abc_py_class.hpp"
-#include "Rcpp.h"
 
 AbcPy::AbcPy(
-        arma::mat data, double theta, double sigma,
+        const arma::mat &data_, double theta, double sigma,
         double eps0, std::string distance):
-            data(data), n_data(data.n_rows), theta(theta), sigma(sigma),
-            eps0(eps0), data_synt(data) {
-    Rcpp::Rcout << "AbcPy" << std::endl;
+            data(data_), data_synt(data_), n_data(data_.n_rows), theta(theta),
+            sigma(sigma), eps0(eps0) {
     if (distance == "wasserstein")
       d = new UniformDiscreteWassersteinDistance();
     else if (distance == "sorting")
@@ -16,9 +14,6 @@ AbcPy::AbcPy(
     else if (distance == "greenkhorn")
       d = new UniformSinkhorn(true);
 
-    Rcpp::Rcout << "data.n_elem: " << data.n_elem << std::endl;
-    Rcpp::Rcout << "HERE2" << std::endl;
-    Rcpp::Rcout << "n_data: " << n_data << std::endl;
     part = arma::vec(n_data, arma::fill::zeros);
     temp_part = arma::vec(n_data, arma::fill::zeros);
 }
@@ -106,6 +101,17 @@ std::tuple<arma::vec, arma::mat, double> AbcPy::run(int nrep) {
       dist_results, part_results, double(end_s-start_s)/CLOCKS_PER_SEC);
 }
 
+AbcPyUniv::AbcPyUniv(
+    const arma::mat &data_, double theta, double sigma, double eps0,
+    double a0, double b0, double k0, double m0, std::string distance):
+        AbcPy(data_, theta, sigma, eps0, distance),
+        a0(a0), b0(b0), k0(k0), m0(m0) {
+    param.resize(1, 2);
+    param(0, 0) = m0;
+    param(0, 1) = b0 / (a0 - 1);
+    tparam = param;
+}
+
 
 void AbcPyUniv::updateParams() {
     tparam.resize(uniq_temp.n_elem, 2);
@@ -127,6 +133,31 @@ void AbcPyUniv::generateSyntData() {
         data_synt(j) = arma::randn() *
             sqrt(tparam(temp_part(j),1)) + tparam(temp_part(j),0);
     }
+}
+
+
+AbcPyMultiv::AbcPyMultiv(
+    const arma::mat &data_, double theta, double sigma, double eps0,
+    double df, const arma::mat& prior_prec_chol,
+    double k0, const arma::vec& m0, std::string distance):
+        AbcPy(data_, theta, sigma, eps0, distance),
+        df(df), k0(k0), m0(m0), prior_prec_chol(prior_prec_chol) {
+
+    mean.reserve(1000);
+    tmean.reserve(1000);
+    prec_chol.reserve(1000);
+    tprec_chol.reserve(1000);
+
+    mean.push_back(m0);
+    tmean.push_back(m0);
+
+    prec_chol.push_back(
+        arma::mat(prior_prec_chol.n_rows, prior_prec_chol.n_rows,
+                  arma::fill::eye));
+
+    tprec_chol.push_back(
+        arma::mat(prior_prec_chol.n_rows, prior_prec_chol.n_rows,
+                  arma::fill::eye));
 }
 
 

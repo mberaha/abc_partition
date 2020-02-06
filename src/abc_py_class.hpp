@@ -34,16 +34,18 @@ class AbcPy {
  public:
      ~AbcPy() {delete d;}
 
-     AbcPy(arma::mat data, double theta, double sigma, double eps0,
+     AbcPy() {}
+
+     AbcPy(const arma::mat& data_, double theta, double sigma, double eps0,
            std::string distance);
 
      void updateUrn();
 
-     virtual void updateParams() {}
+     virtual void updateParams() = 0;
 
-     virtual void generateSyntData() {}
+     virtual void generateSyntData() = 0;
 
-     virtual void saveCurrParam() {}
+     virtual void saveCurrParam() = 0;
 
      void updatePartition();
 
@@ -62,22 +64,8 @@ class AbcPyUniv: public AbcPy{
 
  public:
     AbcPyUniv(
-        arma::mat data, double theta, double sigma, double eps0,
-        double a0, double b0, double k0, double m0, std::string distance):
-            AbcPy(data, theta, sigma, eps0, distance),
-            a0(a0), b0(b0), k0(k0), m0(m0) {
-        param.resize(1, 2);
-        param(0, 0) = m0;
-        param(0, 1) = b0 / (a0 - 1);
-        std::cout << "PARAM: "; param.t().print();
-        tparam = param;
-    }
-
-    void print() {
-        std::cout << "theta: " << theta << ", sigma: " << sigma <<
-                     ", eps0: " << eps0 << ", a0: " << a0 << ", b0: " <<
-                     b0 << ", k0: " << k0 << ", m0: " << m0 << std::endl;
-    }
+        const arma::mat &data_, double theta, double sigma, double eps0,
+        double a0, double b0, double k0, double m0, std::string distance);
 
     void updateParams();
     void generateSyntData();
@@ -99,28 +87,9 @@ class AbcPyMultiv: public AbcPy{
 
  public:
     AbcPyMultiv(
-        arma::mat data, double theta, double sigma, double eps0,
+        const arma::mat &data_, double theta, double sigma, double eps0,
         double df, const arma::mat& prior_prec_chol,
-        double k0, const arma::vec& m0, std::string distance):
-            AbcPy(data, theta, sigma, eps0, distance),
-            df(df), k0(k0), m0(m0), prior_prec_chol(prior_prec_chol) {
-
-        mean.reserve(1000);
-        tmean.reserve(1000);
-        prec_chol.reserve(1000);
-        tprec_chol.reserve(1000);
-
-        mean.push_back(m0);
-        tmean.push_back(m0);
-
-        prec_chol.push_back(
-            arma::mat(prior_prec_chol.n_rows, prior_prec_chol.n_rows,
-                      arma::fill::eye));
-
-        tprec_chol.push_back(
-            arma::mat(prior_prec_chol.n_rows, prior_prec_chol.n_rows,
-                      arma::fill::eye));
-    }
+        double k0, const arma::vec& m0, std::string distance);
 
     void print() {}
 
