@@ -1,7 +1,7 @@
 #ifndef SINKHORN_HPP
 #define SINKHORN_HPP
 
-#include <armadillo>
+#include "../include_arma.hpp"
 
 void sinkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
               const arma::mat &cost, double eps,

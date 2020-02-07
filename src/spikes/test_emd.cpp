@@ -1,5 +1,5 @@
 
-#include <armadillo>
+#include "include_arma.hpp"
 #include <iostream>
 #include <tuple>
 #include "../wasserstein.hpp"

@@ -1,7 +1,7 @@
 #ifndef DISTRIBUTIONS_HPP
 #define DISTRIBUTIONS_HPP
 
-#include <armadillo>
+#include "include_arma.hpp"
 
 arma::mat rwishart(unsigned int df, const arma::mat& chol_S);
 

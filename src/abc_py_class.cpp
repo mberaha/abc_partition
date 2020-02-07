@@ -1,4 +1,5 @@
 #include "abc_py_class.hpp"
+#include "Rcpp.h"
 
 AbcPy::AbcPy(
         const arma::mat &data_, double theta, double sigma,
@@ -58,10 +59,8 @@ void AbcPy::updateUrn() {
 }
 
 void AbcPy::step() {
-    // std::cout << "AbcPy::step" << std::endl;
     tvec.resize(2 * part.n_elem);
     updateUrn();
-
     temp_part = tvec.tail(n_data);
     uniq_temp = unique(temp_part);
 
@@ -70,7 +69,6 @@ void AbcPy::step() {
 }
 
 std::tuple<arma::vec, arma::mat, double> AbcPy::run(int nrep) {
-    // std::cout << "AbcPy::run" << std::endl;
     dist_results.resize(nrep);
     part_results.resize(nrep, n_data);
 
@@ -106,6 +104,7 @@ AbcPyUniv::AbcPyUniv(
     double a0, double b0, double k0, double m0, std::string distance):
         AbcPy(data_, theta, sigma, eps0, distance),
         a0(a0), b0(b0), k0(k0), m0(m0) {
+
     param.resize(1, 2);
     param(0, 0) = m0;
     param(0, 1) = b0 / (a0 - 1);

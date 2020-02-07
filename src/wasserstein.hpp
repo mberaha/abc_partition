@@ -1,7 +1,7 @@
 #ifndef WASSERSTEIN_HPP
 #define WASSERSTEIN_HPP
 
-#include <armadillo>
+#include "include_arma.hpp"
 #include <tuple>
 
 #include "./ot/emd.hpp"

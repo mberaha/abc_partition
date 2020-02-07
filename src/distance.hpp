@@ -1,7 +1,7 @@
 #ifndef DISTANCE_HPP
 #define DISTANCE_HPP
 
-#include <armadillo>
+#include "include_arma.hpp"
 #include <string>
 #include "wasserstein.hpp"
 #include "ot/sinkhorn.hpp"

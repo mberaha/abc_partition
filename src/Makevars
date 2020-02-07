@@ -6,7 +6,7 @@ ALL_SOURCES = $(SOURCES) $(OT_SRCS)
 
 OBJECTS = RcppExports.o $(ALL_SOURCES:.cpp=.o)
 
-PKG_CPPFLAGS = -I. -I./ot -g
+PKG_CPPFLAGS = -I. -I./ot -g -DUSE_R
 
 all: $(SHLIB)
 
