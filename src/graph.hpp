@@ -1,7 +1,8 @@
 #ifndef GRAPH_HPP
 #define GRAPH_HPP
 
-#include <RcppArmadillo.h>
+#include "include_arma.hpp"
+// #include <RcppArmadillo.h>
 // [[Rcpp::depends(RcppArmadillo)]]
 
 class Graph {
@@ -13,6 +14,8 @@ class Graph {
     int n_nodes;
 
  public:
+    Graph() {}
+
     Graph(const arma::mat adj_mat): adj_mat(adj_mat), n_nodes(adj_mat.n_rows) {
         compute_laplacian();
         compute_eigenvalues();
@@ -28,14 +31,14 @@ class Graph {
 
 double graph_dist(const Graph& g1, const Graph& g2);
 
-class GraphSimulator {
- protected:
-    Rcpp::function simulate_ergm_;
+// class GraphSimulator {
+//  protected:
+//     Rcpp::function simulate_ergm_;
 
- public:
-    GraphSimulator();
+//  public:
+//     GraphSimulator();
 
-    arma::mat simulate_graph(arma::vec param);
-}
+//     arma::mat simulate_graph(arma::vec param);
+// }
 
 #endif  // GRAPH_HPP
