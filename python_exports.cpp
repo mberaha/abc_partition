@@ -2,7 +2,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
 
-#include "include_arma.hpp"
+#include "src/include_arma.hpp"
 #include <tuple>
 #include "src/abc_py_class.hpp"
 

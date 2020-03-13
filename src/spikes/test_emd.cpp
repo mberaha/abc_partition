@@ -1,5 +1,4 @@
-
-#include "include_arma.hpp"
+#include "../include_arma.hpp"
 #include <iostream>
 #include <tuple>
 #include "../wasserstein.hpp"
@@ -9,9 +8,9 @@
 
 int main() {
 
-    Distance* d =  new UniformSinkhorn();
+    Distance* d =  new UniformSinkhorn(0.1, 1e-4, 100, true);
 
-    int n = 10;
+    int n = 5000;
     arma::mat first_clus(n, 2, arma::fill::randn);
     arma::mat second_clus(n, 2, arma::fill::randn);
     second_clus += 10;
@@ -41,20 +40,37 @@ int main() {
     arma::vec weights_out(n * 2, arma::fill::ones);
     weights_out /= (2 * n);
 
+    struct timeval start, end;
+
+    gettimeofday(&start, NULL);
     arma::mat cost_mat(n * 2, n * 2);
-    for (int i = 0; i < n * 2; ++i) {
-        for (int j=0; j < n * 2; j++)
-           cost_mat(i, j) = lp_dist(real_data.row(i).t(), synth_data.row(j).t(), 1);
+    #pragma omp parallel for
+    for (int i = 0; i < 2 * n;  ++i) {
+        arma::rowvec curr = real_data.row(i);
+        cost_mat.row(i) = arma::sum(
+            arma::abs(synth_data.each_row() - curr), 1).t();
     }
+    gettimeofday(&end, NULL);
+    double delta = delta = ((end.tv_sec  - start.tv_sec) * 1000000u +
+         end.tv_usec - start.tv_usec) / 1.e6;
 
-    double eps = 1e-3;
-    double threshold = 1.0;
+    std::cout << "cost: " << delta << std::endl;
 
+    double eps = 0.1;
+    double threshold = 1e-9;
+
+    gettimeofday(&start, NULL);
     greenkhorn(weights_in, weights_out, cost_mat, eps, threshold, 100,
-             1, &transport, &dist);
+             1, &transport, &dist, true);
+     gettimeofday(&end, NULL);
+
+    delta = delta = ((end.tv_sec  - start.tv_sec) * 1000000u +
+          end.tv_usec - start.tv_usec) / 1.e6;
+    std::cout << "total: " << delta << std::endl;
+
 
     std::cout << "distance: " << dist << std::endl;
-    //
+
     // std::cout << "transport\n"; transport.print();
     std::cout << "Mappings: " << std::endl;
     for (int i=0; i < 10; i++) {
