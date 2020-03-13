@@ -1,15 +1,13 @@
 #include "sinkhorn.hpp"
 
-// arma::vec softmin(const arma::vec& f, const arma::vec& g, double eps) {
-//     return
-// }
 
 void sinkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
               const arma::mat &cost, double eps,
               double threshold, int max_iter, int norm_p, arma::mat* transport,
               double* dist) {
 
-    arma::mat K = arma::exp(- cost / eps);
+    double minus_eps = -1.0 / eps;
+    arma::mat K = arma::exp(cost * minus_eps);
     arma::vec inv_weights_in = arma::pow(weights_in, -1);
     arma::mat Kp(K.n_rows, K.n_cols);
 
@@ -51,7 +49,6 @@ void sinkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
     return;
 }
 
-
 void greenkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
                 const arma::mat &cost, double eps,
                 double threshold, int max_iter, int norm_p, arma::mat* transport,
@@ -64,7 +61,9 @@ void greenkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
     double Ki1dotV, Ki2dotU;
     arma::vec Krowi1V, Kcoli2U;
 
-    arma::mat K = arma::exp(- cost / eps);
+    double minus_eps = -1.0 / eps;
+    arma::mat K = arma::exp(cost * minus_eps);
+
     arma::vec u, v;
     if (uniform) {
         u = weights_in;
@@ -83,6 +82,7 @@ void greenkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
     arma::vec viol2 = arma::sum(G, 0).t() - weights_out;
 
     int niter = 0;
+
     while ((stopThr > threshold) & (niter < max_iter)) {
         niter += 1;
         i1 = arma::abs(viol1).index_max();
