@@ -1,19 +1,19 @@
 #include "abc_py_class.hpp"
-#include "Rcpp.h"
 
 AbcPy::AbcPy(
-        const arma::mat &data_, double theta, double sigma,
-        double eps0, std::string distance):
-            data(data_), data_synt(data_), n_data(data_.n_rows), theta(theta),
+        int n_data, double theta, double sigma,
+        double eps0, std::string distance, int max_iter,
+        double entropic_eps, double threshold):
+            n_data(n_data), theta(theta),
             sigma(sigma), eps0(eps0) {
     if (distance == "wasserstein")
-      d = new UniformDiscreteWassersteinDistance();
+      d = new UniformDiscreteWassersteinDistance(max_iter);
     else if (distance == "sorting")
       d = new SortingDistance1d();
     else if (distance == "sinkhorn")
-      d = new UniformSinkhorn(false);
+      d = new UniformSinkhorn(entropic_eps, threshold, max_iter, false);
     else if (distance == "greenkhorn")
-      d = new UniformSinkhorn(true);
+      d = new UniformSinkhorn(entropic_eps, threshold, max_iter, true);
 
     part = arma::vec(n_data, arma::fill::zeros);
     temp_part = arma::vec(n_data, arma::fill::zeros);
@@ -101,9 +101,11 @@ std::tuple<arma::vec, arma::mat, double> AbcPy::run(int nrep) {
 
 AbcPyUniv::AbcPyUniv(
     const arma::mat &data_, double theta, double sigma, double eps0,
-    double a0, double b0, double k0, double m0, std::string distance):
-        AbcPy(data_, theta, sigma, eps0, distance),
-        a0(a0), b0(b0), k0(k0), m0(m0) {
+    double a0, double b0, double k0, double m0, std::string distance,
+    int max_iter, double entropic_eps, double threshold):
+        AbcPy(data_.n_rows, theta, sigma, eps0, distance, max_iter,
+              entropic_eps, threshold),
+        data(data_), data_synt(data_), a0(a0), b0(b0), k0(k0), m0(m0) {
 
     param.resize(1, 2);
     param(0, 0) = m0;
@@ -138,9 +140,12 @@ void AbcPyUniv::generateSyntData() {
 AbcPyMultiv::AbcPyMultiv(
     const arma::mat &data_, double theta, double sigma, double eps0,
     double df, const arma::mat& prior_prec_chol,
-    double k0, const arma::vec& m0, std::string distance):
-        AbcPy(data_, theta, sigma, eps0, distance),
-        df(df), k0(k0), m0(m0), prior_prec_chol(prior_prec_chol) {
+    double k0, const arma::vec& m0, std::string distance,
+    int max_iter, double entropic_eps, double threshold):
+        AbcPy(data_.n_rows, theta, sigma, eps0, distance, max_iter,
+              entropic_eps, threshold),
+        data(data_), data_synt(data_), df(df), k0(k0), m0(m0),
+        prior_prec_chol(prior_prec_chol) {
 
     mean.reserve(1000);
     tmean.reserve(1000);
@@ -185,4 +190,67 @@ void AbcPyMultiv::generateSyntData() {
         arma::mat currprec = tprec_chol[temp_part(j)];
         data_synt.row(j) = rnorm_prec_chol(currmean, currprec).t();
     }
+}
+
+AbcPyGraph::AbcPyGraph(
+    const std::vector<arma::mat> &data_, double theta, double sigma,
+    double eps0, double df, const arma::mat &prior_prec_chol,
+    double k0, const arma::vec &m0, std::string distance,
+    int max_iter, double entropic_eps, double threshold) : 
+      AbcPy(data_.size(), theta, sigma, eps0, distance, max_iter,
+            entropic_eps, threshold),
+      df(df), k0(k0), m0(m0), prior_prec_chol(prior_prec_chol) {
+    
+    data.resize(data_.size());
+    data_synt.resize(data_.size());
+    for (int i=0; i < n_data; i++) {
+      data[i] = Graph(data_[i]);
+    }
+    mean.reserve(1000);
+    tmean.reserve(1000);
+    prec_chol.reserve(1000);
+    tprec_chol.reserve(1000);
+
+    mean.push_back(m0);
+    tmean.push_back(m0);
+
+    prec_chol.push_back(
+        arma::mat(prior_prec_chol.n_rows, prior_prec_chol.n_rows,
+                  arma::fill::eye));
+
+    tprec_chol.push_back(
+        arma::mat(prior_prec_chol.n_rows, prior_prec_chol.n_rows,
+                  arma::fill::eye));
+}
+
+void AbcPyGraph::updateParams()
+{
+  tmean.resize(uniq_temp.n_elem);
+  tprec_chol.resize(uniq_temp.n_elem);
+  int k = mean.size();
+
+  for (arma::uword j = 0; j < uniq_temp.n_elem; j++)
+  {
+    temp_part(arma::find(temp_part == uniq_temp(j))).fill(j);
+    if (uniq_temp(j) < k)
+    {
+      tmean[j] = mean[uniq_temp[j]];
+      tprec_chol[j] = prec_chol[uniq_temp[j]];
+    }
+    else
+    {
+      arma::mat chol_prec = rwishart_chol(df, prior_prec_chol);
+      tprec_chol[j] = chol_prec;
+      tmean[j] = rnorm_prec_chol(m0, sqrt(k0) * chol_prec);
+    }
+  }
+}
+
+void AbcPyGraph::generateSyntData()
+{
+  for (arma::uword j = 0; j < temp_part.n_elem; j++)
+  {
+    arma::vec currparam = tmean[temp_part(j)];
+    data_synt[j] = Graph(simulator.simulate_graph(currparam));
+  }
 }

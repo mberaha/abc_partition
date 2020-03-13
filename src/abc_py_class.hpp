@@ -1,8 +1,10 @@
 #ifndef ABC_PY_CLASS
 #define ABC_PY_CLASS
 
+#include <vector> 
 #include "distance.hpp"
 #include "distributions.hpp"
+#include "graph.hpp"
 
 class AbcPy {
  protected:
@@ -14,9 +16,6 @@ class AbcPy {
      arma::vec temp_part;
      arma::vec tvec;
      arma::vec uniq_temp;
-
-     arma::mat data;
-     arma::mat data_synt;
 
      // params
      double theta, sigma;
@@ -36,8 +35,9 @@ class AbcPy {
 
      AbcPy() {}
 
-     AbcPy(const arma::mat& data_, double theta, double sigma, double eps0,
-           std::string distance);
+     AbcPy(int n_data, double theta, double sigma,
+           double eps0, std::string distance, int max_iter=100,
+           double entropic_eps=0.1, double threshold=1e-4);
 
      void updateUrn();
 
@@ -57,6 +57,9 @@ class AbcPy {
 
 class AbcPyUniv: public AbcPy{
  protected:
+     arma::mat data;
+     arma::mat data_synt;
+
      // base measure parameters
      double a0, b0, k0, m0;
      arma::mat param;
@@ -65,7 +68,8 @@ class AbcPyUniv: public AbcPy{
  public:
     AbcPyUniv(
         const arma::mat &data_, double theta, double sigma, double eps0,
-        double a0, double b0, double k0, double m0, std::string distance);
+        double a0, double b0, double k0, double m0, std::string distance,
+        int max_iter=100, double entropic_eps=0.1, double threshold=1e-4);
 
     void updateParams();
     void generateSyntData();
@@ -75,6 +79,9 @@ class AbcPyUniv: public AbcPy{
 
 class AbcPyMultiv: public AbcPy{
  protected:
+     arma::mat data;
+     arma::mat data_synt;
+
      // base measure parameters
      double df, k0;
      arma::vec m0;
@@ -89,7 +96,8 @@ class AbcPyMultiv: public AbcPy{
     AbcPyMultiv(
         const arma::mat &data_, double theta, double sigma, double eps0,
         double df, const arma::mat& prior_prec_chol,
-        double k0, const arma::vec& m0, std::string distance);
+        double k0, const arma::vec& m0, std::string distance,
+        int max_iter=100, double entropic_eps=0.1, double threshold=1e-4);
 
     void print() {}
 
@@ -100,5 +108,40 @@ class AbcPyMultiv: public AbcPy{
         prec_chol = tprec_chol;
     }
 };
+
+
+class AbcPyGraph: public AbcPy {
+ protected:
+    std::vector<Graph> data;
+    std::vector<Graph> data_synt;
+
+    GraphSimulator simulator;
+
+    double df, k0;
+    arma::vec m0;
+    arma::mat prior_prec_chol;
+
+    std::vector<arma::vec> mean;
+    std::vector<arma::vec> tmean;
+    std::vector<arma::mat> prec_chol;
+    std::vector<arma::mat> tprec_chol;
+
+
+public:
+    AbcPyGraph(
+        const std::vector<arma::mat> &data_, double theta, double sigma, 
+        double eps0, double df, const arma::mat &prior_prec_chol,
+        double k0, const arma::vec &m0, std::string distance,
+        int max_iter = 100, double entropic_eps = 0.1, double threshold = 1e-4);
+
+    void updateParams();
+    void generateSyntData;
+
+    void saveCurrParam()
+    {
+        mean = tmean;
+        prec_chol = tprec_chol;
+    }
+}
 
 #endif
