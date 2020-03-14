@@ -34,7 +34,11 @@ class Graph {
 double graph_dist(const Graph& g1, const Graph& g2);
 
 class GraphSimulator {
- public:
+protected:
+ 
+ Rcpp::Function simulate_ergm_ = Rcpp::Environment::global_env()["simulate_ergm"];
+
+public:
     GraphSimulator() {}
 
     arma::mat simulate_graph(arma::vec param, int n_nodes);

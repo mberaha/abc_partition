@@ -3,6 +3,7 @@
 
 #include <tuple>
 #include "abc_py_class.hpp"
+#include "graph.hpp"
 
 // [[Rcpp::export]]
 Rcpp::List test(arma::mat data) {
@@ -68,4 +69,15 @@ Rcpp::List runAbcMCMC_graph(
     res["part_results"] = std::get<1>(out);
     res["time"] = std::get<2>(out);
     return res;
+}
+
+// [[Rcpp::export]]
+double graph_dist_R(const arma::mat &g1, const arma::mat &g2) {
+    Graph gg1(g1);
+    Graph gg2(g2);
+
+    const arma::vec eig1 = gg1.get_eigenvalues();
+    const arma::vec eig2 = gg2.get_eigenvalues();
+
+    return arma::sum(arma::pow(eig1 - eig2, 2));
 }

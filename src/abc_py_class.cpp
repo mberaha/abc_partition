@@ -319,6 +319,9 @@ std::tuple<arma::vec, arma::mat, double> AbcPyGraph::run(int nrep)
   int start_s = clock();
   for (int iter = 0; iter < nrep; iter++)
   {
+    if (int((iter+1) % 100) == 0) {
+      std::cout << "Iter: " << iter + 1 << " / " << nrep << std::endl;
+    }
     step();
     // std::cout << "data: "; data.t().print();
     // std::cout << "data_synt: "; data_synt.t().print();

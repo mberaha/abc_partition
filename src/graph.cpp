@@ -26,7 +26,6 @@ double graph_dist(const Graph &g1, const Graph &g2)
 
 arma::mat GraphSimulator::simulate_graph(arma::vec param, int n_nodes)
 {
-    Rcpp::Function simulate_ergm_ = Rcpp::Environment::global_env()["simulate_ergm"];
     Rcpp::NumericVector out = simulate_ergm_(param, n_nodes);
     return arma::mat(out.begin(), n_nodes, n_nodes);
 }

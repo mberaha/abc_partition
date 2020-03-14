@@ -56,11 +56,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// graph_dist_R
+double graph_dist_R(const arma::mat& g1, const arma::mat& g2);
+RcppExport SEXP _abcpp_graph_dist_R(SEXP g1SEXP, SEXP g2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type g1(g1SEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type g2(g2SEXP);
+    rcpp_result_gen = Rcpp::wrap(graph_dist_R(g1, g2));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_abcpp_test", (DL_FUNC) &_abcpp_test, 1},
     {"_abcpp_runAbcMCMC_univ_R", (DL_FUNC) &_abcpp_runAbcMCMC_univ_R, 11},
     {"_abcpp_runAbcMCMC_graph", (DL_FUNC) &_abcpp_runAbcMCMC_graph, 8},
+    {"_abcpp_graph_dist_R", (DL_FUNC) &_abcpp_graph_dist_R, 2},
     {NULL, NULL, 0}
 };
 
