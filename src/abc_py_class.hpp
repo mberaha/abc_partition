@@ -169,7 +169,6 @@ public:
         param = tparam;
     }
 
-
     void step();
 
     std::tuple<arma::vec, arma::mat, double> run(int nrep);

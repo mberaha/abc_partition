@@ -341,6 +341,11 @@ std::tuple<arma::vec, arma::mat, double> AbcPyGraph::run(int nrep)
       part = temp_part;
       saveCurrParam();
     }
+
+    if (int(iter+1) % 5000 == 0) {
+      dist_results.save("part_chkpt.csv", arma::csv_ascii);
+      dist_results.save("dists_chkpt.csv", arma::csv_ascii);
+    }
   }
 
   int end_s = clock();
