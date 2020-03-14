@@ -2,8 +2,8 @@
 #define GRAPH_HPP
 
 #include "include_arma.hpp"
-// #include <RcppArmadillo.h>
-// [[Rcpp::depends(RcppArmadillo)]]
+#include "Rcpp.h"
+
 
 class Graph {
  protected:
