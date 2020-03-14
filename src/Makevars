@@ -7,7 +7,7 @@ ALL_SOURCES = $(SOURCES) $(OT_SRCS)
 
 OBJECTS = RcppExports.o $(ALL_SOURCES:.cpp=.o)
 
-PKG_CPPFLAGS = -I. -I./ot -O3 -DUSE_R -DARMA_USE_OPENMP -ftree-vectorize -funroll-loops -fopenmp
+PKG_CXXFLAGS = -I. -I./ot -O3 -DUSE_R -DARMA_USE_OPENMP -ftree-vectorize -funroll-loops -fopenmp
 
 all: $(SHLIB)
 
