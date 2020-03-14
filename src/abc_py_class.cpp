@@ -200,7 +200,6 @@ AbcPyGraph::AbcPyGraph(
       n_data(data_.size()), theta(theta), sigma(sigma), eps0(eps0),
       m0(m0), prior_prec_chol(prior_prec_chol)
 {
-
   // TODO: change to greedy maybe
   d = new GraphSinkhorn(entropic_eps, threshold, max_iter, false);
   part = arma::vec(n_data, arma::fill::zeros);
@@ -290,15 +289,19 @@ void AbcPyGraph::updateParams()
 
 void AbcPyGraph::generateSyntData()
 {
+
   for (arma::uword j = 0; j < temp_part.n_elem; j++)
   {
     arma::vec currparam = tparam[temp_part(j)];
-    data_synt[j] = Graph(simulator.simulate_graph(currparam, n_nodes));
+    arma::mat g = simulator.simulate_graph(currparam, n_nodes);
+    // std::cout << "g:\n" << g << std::endl;
+    data_synt[j] = Graph(g);
   }
 }
 
 void AbcPyGraph::step()
 {
+
   tvec.resize(2 * part.n_elem);
   updateUrn();
   temp_part = tvec.tail(n_data);

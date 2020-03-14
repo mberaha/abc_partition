@@ -60,6 +60,7 @@ Rcpp::List runAbcMCMC_graph(
     Rcpp::Rcout << "HERE" << std::endl;
     AbcPyGraph abc_mcm(
         data, theta, sigma, eps, prec_chol, m0, dist);
+
     std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
 
     Rcpp::List res;
