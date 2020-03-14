@@ -116,8 +116,9 @@ class AbcPyGraph {
  protected:
     std::vector<Graph> data;
     std::vector<Graph> data_synt;
+    int n_nodes;
 
-    // GraphSimulator simulator;
+    GraphSimulator simulator;
 
     std::vector<arma::vec> param;
     std::vector<arma::vec> tparam;

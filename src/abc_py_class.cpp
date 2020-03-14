@@ -213,6 +213,8 @@ AbcPyGraph::AbcPyGraph(
     data[i] = Graph(data_[i]);
   }
 
+  n_nodes = data[0].get_n_nodes();
+
   param.reserve(1000);
   param.reserve(1000);
 
@@ -291,8 +293,7 @@ void AbcPyGraph::generateSyntData()
   for (arma::uword j = 0; j < temp_part.n_elem; j++)
   {
     arma::vec currparam = tparam[temp_part(j)];
-    data_synt[j] = data[j];
-    // data_synt[j] = Graph(simulator.simulate_graph(currparam));
+    data_synt[j] = Graph(simulator.simulate_graph(currparam, n_nodes));
   }
 }
 

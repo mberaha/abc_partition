@@ -26,19 +26,18 @@ class Graph {
     void compute_eigenvalues();
 
     arma::vec get_eigenvalues() const { return eigenvalues; }
+
+    int get_n_nodes() const {return n_nodes;}
 };
 
 
 double graph_dist(const Graph& g1, const Graph& g2);
 
-// class GraphSimulator {
-//  protected:
-//     Rcpp::function simulate_ergm_;
+class GraphSimulator {
+ public:
+    GraphSimulator() {}
 
-//  public:
-//     GraphSimulator();
-
-//     arma::mat simulate_graph(arma::vec param);
-// }
+    arma::mat simulate_graph(arma::vec param, int n_nodes);
+};
 
 #endif  // GRAPH_HPP

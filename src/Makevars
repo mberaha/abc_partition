@@ -1,6 +1,7 @@
 CXX_STD = CXX14
 
-SOURCES = abc_py_class.cpp distance.cpp distributions.cpp wasserstein.cpp rcpp_functions.cpp
+SOURCES = abc_py_class.cpp distance.cpp distributions.cpp wasserstein.cpp \
+          rcpp_functions.cpp graph.cpp
 OT_SRCS = ot/emd.cpp ot/sinkhorn.cpp
 ALL_SOURCES = $(SOURCES) $(OT_SRCS)
 

@@ -57,3 +57,6 @@ hist(datas, breaks = 30)
 points(x = datas, y = rep(0,length(datas)), col = parts[which.min(d_abs),] + 5, pch = 20)
 parts[which.min(d_abs),]
 
+
+
+

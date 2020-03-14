@@ -52,9 +52,9 @@ Rcpp::List runAbcMCMC_univ_R(
 
 // [[Rcpp::export]]
 Rcpp::List runAbcMCMC_graph(
-    std::vector<arma::mat> data, int nrep = 1, double theta = 1.0,
-    double sigma = 0.2, arma::vec m0 = 0.0, arma::mat prec_chol,
-    double eps = 10.0, std::string dist = "adasadas")
+    std::vector<arma::mat> data, int nrep, double theta,
+    double sigma, arma::vec m0, arma::mat prec_chol,
+    double eps, std::string dist)
 {
     Rcpp::Rcout << "run" << std::endl;
     Rcpp::Rcout << "HERE" << std::endl;

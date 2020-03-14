@@ -38,10 +38,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// runAbcMCMC_graph
+Rcpp::List runAbcMCMC_graph(std::vector<arma::mat> data, int nrep, double theta, double sigma, arma::vec m0, arma::mat prec_chol, double eps, std::string dist);
+RcppExport SEXP _abcpp_runAbcMCMC_graph(SEXP dataSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP m0SEXP, SEXP prec_cholSEXP, SEXP epsSEXP, SEXP distSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<arma::mat> >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< int >::type nrep(nrepSEXP);
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type m0(m0SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type prec_chol(prec_cholSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
+    rcpp_result_gen = Rcpp::wrap(runAbcMCMC_graph(data, nrep, theta, sigma, m0, prec_chol, eps, dist));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_abcpp_test", (DL_FUNC) &_abcpp_test, 1},
     {"_abcpp_runAbcMCMC_univ_R", (DL_FUNC) &_abcpp_runAbcMCMC_univ_R, 11},
+    {"_abcpp_runAbcMCMC_graph", (DL_FUNC) &_abcpp_runAbcMCMC_graph, 8},
     {NULL, NULL, 0}
 };
 
