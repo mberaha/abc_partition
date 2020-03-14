@@ -5,7 +5,7 @@ simulate_ergm <- function(theta, nnodes=100) {
   y = network(nnodes, directed=F) 
   as.matrix(simulate(
     y ~ degree(0) + degree(1) + degree(10) + degree(50) + degree(70), 
-    coef=theta))
+    coef=theta, burnin=100, interval=100))
 }
 
 library(Rcpp)
