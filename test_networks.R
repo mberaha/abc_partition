@@ -31,7 +31,7 @@ eps = 30
 
 inits = list(c(50, 60, -1000, -1000, 22), c(0, 0, 50, 10, 22))
 
-out = runAbcMCMC_graph(networks, 1, 1, 0.1, m0, var_chol, inits, eps, "aaaa")
+out = runAbcMCMC_graph(networks, 100000, 1, 0.1, m0, var_chol, inits, eps, "aaaa")
 
 saveRDS(out, file="sim_out.RData")
 
