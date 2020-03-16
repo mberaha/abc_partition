@@ -25,10 +25,31 @@ for (i in 1:data_per_clus) {
   networks[[i + data_per_clus]] = simulate_ergm(c(0, 0, 50, 10, 22), 100)
 }
 
-prec_chol = diag(1, 5, 5) / 100000
+var_chol = diag(1, 5, 5) * 500
 m0 = rep(0, 5)
 eps = 30
 
-out = runAbcMCMC_graph(networks, 100000, 2, 0.2, m0, prec_chol, eps, "aaaa")
+inits = list(c(50, 60, -1000, -1000, 22), c(0, 0, 50, 10, 22))
+
+out = runAbcMCMC_graph(networks, 1, 2, 0.2, m0, var_chol, inits, eps, "aaaa")
 
 saveRDS(out, file="sim_out.RData")
+
+
+###############################à
+
+# library(clusteval)
+# 
+# sourceCpp("code_CPP.cpp")
+# 
+# out = readRDS("sim_out.RData")
+# 
+# out$part_results[99990:100000, ]
+# part = c(rep(1, data_per_clus), rep(2, data_per_clus))
+# 
+# cluster_similarity(part, out$part_results[100000, ] + 1, similarity = "rand")
+# 
+# parts <- out$part_results
+# 
+# best_part <- parts[which.min(compute_dist(parts)),]
+# cluster_similarity(part, best_part + 1, similarity = "rand")

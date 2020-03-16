@@ -194,16 +194,15 @@ void AbcPyMultiv::generateSyntData() {
 
 AbcPyGraph::AbcPyGraph(
     const std::vector<arma::mat> &data_, double theta, double sigma,
-    double eps0, const arma::mat &prior_prec_chol,
+    double eps0, const arma::mat &prior_var_chol,
     const arma::vec &m0, std::string distance,
+    const std::vector<arma::vec> &inits,
     int max_iter, double entropic_eps, double threshold) : 
       n_data(data_.size()), theta(theta), sigma(sigma), eps0(eps0),
-      m0(m0), prior_prec_chol(prior_prec_chol)
+      m0(m0), prior_var_chol(prior_var_chol)
 {
   // TODO: change to greedy maybe
   d = new GraphSinkhorn(entropic_eps, threshold, max_iter, false);
-  part = arma::vec(n_data, arma::fill::zeros);
-  temp_part = arma::vec(n_data, arma::fill::zeros);
 
   data.resize(data_.size());
   data_synt.resize(data_.size());
@@ -215,10 +214,19 @@ AbcPyGraph::AbcPyGraph(
   n_nodes = data[0].get_n_nodes();
 
   param.reserve(1000);
-  param.reserve(1000);
+  tparam.reserve(1000);
 
+  if (inits.size()) {
+    for (const arma::vec val: inits)
+      param.push_back(val);
+  } else {
   param.push_back(m0);
-  param.push_back(m0);
+  }
+  tparam = param;
+
+  int NUM_CLUS_INIT = 5;
+  part = arma::randi(data.size(), arma::distr_param(0, NUM_CLUS_INIT));
+  temp_part = arma::ivec(n_data, arma::fill::zeros);
 }
 
 void AbcPyGraph::updateUrn()
@@ -227,7 +235,7 @@ void AbcPyGraph::updateUrn()
   tvec.fill(0.0);
   tvec.head(n) = part;
 
-  arma::vec uniq = unique(part);
+  arma::ivec uniq = unique(part);
   int k_max = uniq.n_elem;
   arma::vec tfreqs(k_max + n);
   tfreqs.fill(0.0);
@@ -282,7 +290,8 @@ void AbcPyGraph::updateParams()
     }
     else
     {
-      tparam[j] = rnorm_prec_chol(m0, prior_prec_chol);
+      arma::vec aux = arma::vec(m0.n_elem, arma::fill::randn) + m0;
+      tparam[j] = prior_var_chol * m0;
     }
   }
 }
@@ -311,7 +320,7 @@ void AbcPyGraph::step()
   generateSyntData();
 }
 
-std::tuple<arma::vec, arma::mat, double> AbcPyGraph::run(int nrep)
+std::tuple<arma::vec, arma::imat, double> AbcPyGraph::run(int nrep)
 {
   dist_results.resize(nrep);
   part_results.resize(nrep, n_data);

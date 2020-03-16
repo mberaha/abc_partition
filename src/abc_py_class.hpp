@@ -124,13 +124,13 @@ class AbcPyGraph {
     std::vector<arma::vec> tparam;
 
     GraphSinkhorn* d;
-    arma::mat part_results;
+    arma::imat part_results;
     arma::vec dist_results;
     double curr_dist;
-    arma::vec part;
-    arma::vec temp_part;
-    arma::vec tvec;
-    arma::vec uniq_temp;
+    arma::ivec part;
+    arma::ivec temp_part;
+    arma::ivec tvec;
+    arma::ivec uniq_temp;
 
     // params
     double theta, sigma;
@@ -146,8 +146,7 @@ class AbcPyGraph {
     double meanEps, meanEps2;
 
     arma::vec m0;
-    arma::mat prior_prec_chol;
-
+    arma::mat prior_var_chol;
 
 public:
     AbcPyGraph() {}
@@ -155,8 +154,9 @@ public:
 
     AbcPyGraph(
         const std::vector<arma::mat> &data_, double theta, double sigma, 
-        double eps0, const arma::mat &prior_prec_chol,
+        double eps0, const arma::mat &prior_var_chol,
         const arma::vec &m0, std::string distance,
+        const std::vector<arma::vec> &inits,
         int max_iter = 100, double entropic_eps = 0.1, double threshold = 1e-4);
 
     void updateUrn();
@@ -171,7 +171,7 @@ public:
 
     void step();
 
-    std::tuple<arma::vec, arma::mat, double> run(int nrep);
+    std::tuple<arma::vec, arma::imat, double> run(int nrep);
 };
 
 #endif

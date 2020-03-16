@@ -54,15 +54,15 @@ Rcpp::List runAbcMCMC_univ_R(
 // [[Rcpp::export]]
 Rcpp::List runAbcMCMC_graph(
     std::vector<arma::mat> data, int nrep, double theta,
-    double sigma, arma::vec m0, arma::mat prec_chol,
-    double eps, std::string dist)
+    double sigma, arma::vec m0, arma::mat var_chol,
+    const std::vector<arma::vec> &inits, double eps, std::string dist)
 {
     Rcpp::Rcout << "run" << std::endl;
     Rcpp::Rcout << "HERE" << std::endl;
     AbcPyGraph abc_mcm(
-        data, theta, sigma, eps, prec_chol, m0, dist);
+        data, theta, sigma, eps, var_chol, m0, dist, inits);
 
-    std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
+    std::tuple<arma::vec, arma::imat, double> out = abc_mcm.run(nrep);
 
     Rcpp::List res;
     res["dist"] = std::get<0>(out);

@@ -31,3 +31,5 @@ module load R
 #-------------------RUN THE EXECUTABLE---------------------------------#
 
 Rscript test_networks.R &> test_networks_log.txt
+
+
