@@ -38,18 +38,18 @@ saveRDS(out, file="sim_out.RData")
 
 ###############################à
 
-# library(clusteval)
-# 
-# sourceCpp("code_CPP.cpp")
-# 
-# out = readRDS("sim_out.RData")
-# 
-# out$part_results[99990:100000, ]
-# part = c(rep(1, data_per_clus), rep(2, data_per_clus))
-# 
-# cluster_similarity(part, out$part_results[100000, ] + 1, similarity = "rand")
-# 
-# parts <- out$part_results
-# 
-# best_part <- parts[which.min(compute_dist(parts)),]
-# cluster_similarity(part, best_part + 1, similarity = "rand")
+library(clusteval)
+
+sourceCpp("code_CPP.cpp")
+
+out = readRDS("sim_out.RData")
+
+out$part_results[90000:100000, ]
+part = c(rep(1, data_per_clus), rep(2, data_per_clus))
+
+cluster_similarity(part, out$part_results[100000, ] + 1, similarity = "rand")
+
+parts <- out$part_results
+
+best_part <- parts[which.min(compute_dist(parts)),]
+cluster_similarity(part, best_part + 1, similarity = "rand")
