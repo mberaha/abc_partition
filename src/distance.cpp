@@ -16,7 +16,6 @@ UniformDiscreteWassersteinDistance::compute(
 std::tuple<arma::uvec, double>
 SortingDistance1d::compute(
         const arma::mat &real_data, const arma::mat &synth_data) {
-
     arma::uvec perm = arma::sort_index(synth_data);
     double dist = arma::accu(pow(abs(real_data - synth_data(perm)), p));
     return std::make_tuple(perm, dist);

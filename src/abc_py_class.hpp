@@ -37,9 +37,9 @@ class AbcPy {
 
      AbcPy() {}
 
-     AbcPy(int n_data, double theta, double sigma,
-           double eps0, std::string distance, int max_iter=100,
-           double entropic_eps=0.1, double threshold=1e-4);
+     AbcPy(arma::mat data_, double theta, double sigma,
+           double eps0, std::string distance, int max_iter = 100,
+           double entropic_eps = 0.1, double threshold = 1e-4);
 
      void updateUrn();
 
@@ -58,8 +58,6 @@ class AbcPy {
 
 class AbcPyUniv: public AbcPy{
  protected:
-     arma::mat data;
-     arma::mat data_synt;
 
      // base measure parameters
      double a0, b0, k0, m0;
@@ -80,8 +78,6 @@ class AbcPyUniv: public AbcPy{
 
 class AbcPyMultiv: public AbcPy{
  protected:
-     arma::mat data;
-     arma::mat data_synt;
 
      // base measure parameters
      double df, k0;
