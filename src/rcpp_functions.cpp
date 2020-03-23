@@ -1,7 +1,7 @@
 #include "RcppArmadillo.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
-#include <omph.>
+#include <omp.h>
 #include <tuple>
 #include "abc_py_class.hpp"
 #include "graph.hpp"
