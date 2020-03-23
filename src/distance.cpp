@@ -79,7 +79,7 @@ std::tuple<arma::uvec, double> GraphSinkhorn::compute(
     dist = -10;
     call();
 
-#pragma omp parallel for
+    #pragma omp parallel for
     for (int i = 0; i < n_out; i++)
     {
         perm(i) = transport.row(i).index_max();
@@ -107,7 +107,7 @@ void GraphSinkhorn::init(const std::vector<Graph> &real_data,
 void GraphSinkhorn::compute_cost(const std::vector<Graph> &real_data,
                                  const std::vector<Graph> &synth_data)
 {
-
+    #pragma omp parallel for collapse(2)
     for (int i = 0; i < n_in; ++i) {
         for (int j = 0; j < n_out; ++j) {
             cost_mat(i, j) = graph_dist(real_data[i], synth_data[j]);

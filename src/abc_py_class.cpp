@@ -352,7 +352,7 @@ std::tuple<arma::vec, arma::imat, double> AbcPyGraph::run(int nrep)
     }
 
     if (int(iter+1) % 5000 == 0) {
-      dist_results.save("part_chkpt.csv", arma::csv_ascii);
+      part_results.save("part_chkpt.csv", arma::csv_ascii);
       dist_results.save("dists_chkpt.csv", arma::csv_ascii);
     }
   }
