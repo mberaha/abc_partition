@@ -2,7 +2,7 @@ rm(list=ls())
 library(ergm)
 
 networks = readRDS("airline_networks.RData")
-start_net = network(networks[[12]])
+start_net = network(networks[[12]], directed=F)
 
 simulate_ergm <- function(theta, nnodes=100) {
   as.matrix(simulate(
