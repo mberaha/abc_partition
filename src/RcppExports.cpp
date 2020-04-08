@@ -69,12 +69,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// simulate_graph
+arma::mat simulate_graph(const arma::vec& theta);
+RcppExport SEXP _abcpp_simulate_graph(SEXP thetaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::vec& >::type theta(thetaSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_graph(theta));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_abcpp_test", (DL_FUNC) &_abcpp_test, 1},
     {"_abcpp_runAbcMCMC_univ_R", (DL_FUNC) &_abcpp_runAbcMCMC_univ_R, 11},
     {"_abcpp_runAbcMCMC_graph", (DL_FUNC) &_abcpp_runAbcMCMC_graph, 9},
     {"_abcpp_graph_dist_R", (DL_FUNC) &_abcpp_graph_dist_R, 2},
+    {"_abcpp_simulate_graph", (DL_FUNC) &_abcpp_simulate_graph, 1},
     {NULL, NULL, 0}
 };
 

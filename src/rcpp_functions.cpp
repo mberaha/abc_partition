@@ -82,3 +82,10 @@ double graph_dist_R(const arma::mat &g1, const arma::mat &g2) {
 
     return arma::sum(arma::pow(eig1 - eig2, 2));
 }
+
+
+// [[Rcpp::export]]
+arma::mat simulate_graph(const arma::vec& theta) {
+    GraphSimulator simulator;
+    return simulator.simulate_graph(theta, 100);
+}

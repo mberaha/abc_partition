@@ -12,6 +12,7 @@ class Graph {
     arma::vec eigenvalues;
     arma::mat eigenvectors;
     int n_nodes;
+    int n_edges;
 
  public:
     Graph() {}
@@ -19,6 +20,7 @@ class Graph {
     Graph(const arma::mat adj_mat): adj_mat(adj_mat), n_nodes(adj_mat.n_rows) {
         compute_laplacian();
         compute_eigenvalues();
+        n_edges = (int) arma::accu(adj_mat);
     }
 
     void compute_laplacian();
@@ -28,6 +30,8 @@ class Graph {
     arma::vec get_eigenvalues() const { return eigenvalues; }
 
     int get_n_nodes() const {return n_nodes;}
+
+    int get_n_edges() const {return n_edges;}
 };
 
 

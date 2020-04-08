@@ -4,9 +4,12 @@ library(ergm)
 simulate_ergm <- function(theta, nnodes=100) {
   y = network(nnodes, directed=F) 
   as.matrix(simulate(
-    y ~ degree(0) + degree(1) + degree(10) + degree(50) + degree(70), 
+    y ~ edges + degree(0) + degree(1) + degree(10) + degree(50) + degree(70), 
     coef=theta, burnin=100, interval=100))
 }
+
+plot(network(simulate_ergm(c(-2, 100, 200, -10000, -10000, -10000))))
+
 
 library(Rcpp)
 library(devtools)
