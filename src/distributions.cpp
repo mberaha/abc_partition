@@ -36,6 +36,6 @@ arma::mat rwishart_chol(unsigned int df, const arma::mat& chol_S){
 }
 
 arma::vec rnorm_prec_chol(const arma::vec& mean, const arma::mat& chol_prec) {
-    arma::vec z(mean.n_elem, arma::fill::randn);
+    arma::vec z = arma::randn<arma::vec>(mean.n_elem);
     return mean + arma::solve(chol_prec, z);
 }

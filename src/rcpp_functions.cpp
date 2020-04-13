@@ -63,12 +63,15 @@ Rcpp::List runAbcMCMC_graph(
     AbcPyGraph abc_mcm(
         data, theta, sigma, eps, var_chol, m0, dist, inits);
 
-    std::tuple<arma::vec, arma::imat, double> out = abc_mcm.run(nrep);
+    std::tuple<
+        arma::vec, arma::imat, double,
+        std::vector<arma::mat>> out = abc_mcm.run(nrep);
 
     Rcpp::List res;
     res["dist"] = std::get<0>(out);
     res["part_results"] = std::get<1>(out);
     res["time"] = std::get<2>(out);
+    res["param_results"] = std::get<3>(out);
     return res;
 }
 

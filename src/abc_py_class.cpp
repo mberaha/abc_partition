@@ -304,8 +304,8 @@ void AbcPyGraph::updateParams()
     }
     else
     {
-      arma::vec aux = arma::vec(m0.n_elem, arma::fill::randn) + m0;
-      tparam[j] = prior_var_chol * m0;
+      arma::vec aux = arma::randn<arma::vec>(m0.n_elem);
+      tparam[j] = prior_var_chol * aux + m0;
     }
   }
 }
@@ -333,10 +333,13 @@ void AbcPyGraph::step()
   generateSyntData();
 }
 
-std::tuple<arma::vec, arma::imat, double> AbcPyGraph::run(int nrep)
+std::tuple<
+    arma::vec, arma::imat, double,
+    std::vector<arma::mat>> AbcPyGraph::run(int nrep)
 {
   dist_results.resize(nrep);
   part_results.resize(nrep, n_data);
+  param_results.resize(nrep);
 
   int start_s = clock();
   for (int iter = 0; iter < nrep; iter++)
@@ -364,6 +367,8 @@ std::tuple<arma::vec, arma::imat, double> AbcPyGraph::run(int nrep)
       saveCurrParam();
     }
 
+    param_results[iter] = vstack(param);
+
     if (int(iter+1) % 5000 == 0) {
       part_results.save("part_chkpt.csv", arma::csv_ascii);
       dist_results.save("dists_chkpt.csv", arma::csv_ascii);
@@ -372,5 +377,6 @@ std::tuple<arma::vec, arma::imat, double> AbcPyGraph::run(int nrep)
 
   int end_s = clock();
   return std::make_tuple(
-      dist_results, part_results, double(end_s - start_s) / CLOCKS_PER_SEC);
+      dist_results, part_results, double(end_s - start_s) / CLOCKS_PER_SEC,
+      param_results);
 }

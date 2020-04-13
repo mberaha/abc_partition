@@ -5,6 +5,7 @@
 #include "distance.hpp"
 #include "distributions.hpp"
 #include "graph.hpp"
+#include "utils.hpp"
 
 class AbcPy {
  protected:
@@ -128,6 +129,8 @@ class AbcPyGraph {
     arma::ivec tvec;
     arma::ivec uniq_temp;
 
+    std::vector<arma::mat> param_results;
+
     // params
     double theta, sigma;
     int n_data;
@@ -161,13 +164,15 @@ public:
     
     void generateSyntData();
 
-    void saveCurrParam() {
+    inline void saveCurrParam() {
         param = tparam;
     }
 
     void step();
 
-    std::tuple<arma::vec, arma::imat, double> run(int nrep);
+    std::tuple<
+        arma::vec, arma::imat, double, 
+        std::vector<arma::mat>> run(int nrep);
 };
 
 #endif
