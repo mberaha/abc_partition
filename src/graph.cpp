@@ -23,7 +23,8 @@ double graph_dist(const Graph &g1, const Graph &g2)
     const arma::vec eig1 = g1.get_eigenvalues();
     const arma::vec eig2 = g2.get_eigenvalues();
     double out = arma::sum(arma::pow(eig1 - eig2, 2));
-    out *= 1.0 * (std::abs(n1 - n2) + 1.0) / (1.0 * n1 + n2 + 1.0);
+    // out *= 1.0 * (std::abs(n1 - n2) + 1.0) / (n1 + n2 + 1.0);
+    out *= 1.0 * (std::abs(n1 - n2) + 1.0) / (std::min({n1, n2})+ 1.0);
     return out;
 }
 

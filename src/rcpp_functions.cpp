@@ -80,10 +80,7 @@ double graph_dist_R(const arma::mat &g1, const arma::mat &g2) {
     Graph gg1(g1);
     Graph gg2(g2);
 
-    const arma::vec eig1 = gg1.get_eigenvalues();
-    const arma::vec eig2 = gg2.get_eigenvalues();
-
-    return arma::sum(arma::pow(eig1 - eig2, 2));
+    return graph_dist(gg1, gg2);
 }
 
 

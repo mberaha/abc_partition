@@ -6,8 +6,8 @@ start_net = network(networks[[12]], directed=F)
 
 simulate_ergm <- function(theta, nnodes=100) {
   as.matrix(simulate(
-    start_net ~ edges + degree(0) + degree(1) + degree(10) + degree(50) + degree(70), 
-    coef=theta, burnin=100, interval=100))
+    start_net ~ edges + degree(0) + degrange(from=2, to=10) + degrange(from=11, to=50) + degrange(from=50, to=70),
+    coef=c(theta, 1), burnin=100, interval=100))
 }
 
 library(Rcpp)
@@ -17,15 +17,14 @@ load_all(reset=T, recompile=T)
 
 
 
-var_chol = diag(1, 6, 6) * 30
-m0 = c(-10, -40, 0, 0, -100, -20)
-eps = 30
+var_chol = diag(1, 4, 4) * 10
+m0 = c(-4, 3, 15, -20)
+eps = 300
 
-inits = list(c(-10, 100, 100, -100, -100, -100), 
-             c(-37, -11, -11, -14, -100, 63),
-             c(1, 15, 3, 100, 100, -100))
+inits = list(c(-3, 2, -1, -1), 
+             c(-10, 0, 0, -15),
+             c(-1, 10, 30, -40))
 
 out = runAbcMCMC_graph(networks, 100000, 1, 0.1, m0, var_chol, inits, eps, "aaaa")
-
 saveRDS(out, file="airlines_out.RData")
 
