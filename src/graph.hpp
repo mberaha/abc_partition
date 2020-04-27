@@ -34,18 +34,22 @@ class Graph {
     int get_n_edges() const {return n_edges;}
 };
 
-
-double graph_dist(const Graph& g1, const Graph& g2);
-
-class GraphSimulator {
+class GraphSimulator
+{
 protected:
- 
- Rcpp::Function simulate_ergm_ = Rcpp::Environment::global_env()["simulate_ergm"];
+    Rcpp::Function simulate_ergm_ = Rcpp::Environment::global_env()["simulate_ergm"];
 
 public:
     GraphSimulator() {}
 
     arma::mat simulate_graph(arma::vec param, int n_nodes);
 };
+
+
+double graph_dist(const Graph& g1, const Graph& g2);
+
+arma::mat pairwise_dist(const std::vector<Graph> &x,
+                        const std::vector<Graph> &y);
+
 
 #endif  // GRAPH_HPP

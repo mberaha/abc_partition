@@ -4,21 +4,31 @@
 #include <vector> 
 #include "distance.hpp"
 #include "distributions.hpp"
-#include "graph.hpp"
 #include "utils.hpp"
+#include "kernels.hpp"
 
+
+template<typename data_t, typename param_t, class Kernel>
 class AbcPy {
  protected:
-     Distance* d;
-     arma::mat part_results;
+     Distance<data_t>* d;
+     arma::imat part_results;
      arma::vec dist_results;
      double curr_dist;
-     arma::vec part;
-     arma::vec temp_part;
-     arma::vec tvec;
-     arma::vec uniq_temp;
-     arma::mat data;
-     arma::mat data_synt;
+     arma::ivec part;
+     arma::ivec temp_part;
+     arma::ivec tvec;
+     arma::ivec uniq_temp;
+     std::vector<data_t> data;
+     std::vector<data_t> data_synt;
+
+     std::vector<param_t> param;
+     std::vector<param_t> tparam;
+
+     // used only if log=true
+     std::vector<std::vector<param_t>> param_log;
+
+     Kernel kernel;
 
      // params
      double theta, sigma;
@@ -33,146 +43,52 @@ class AbcPy {
      double eps;
      double meanEps, meanEps2;
 
+     bool log=false;
+     int num_accepted = 0;
+
  public:
      ~AbcPy() {delete d;}
 
      AbcPy() {}
 
-     AbcPy(arma::mat data_, double theta, double sigma,
-           double eps0, std::string distance, int max_iter = 100,
-           double entropic_eps = 0.1, double threshold = 1e-4);
+     AbcPy(std::vector<data_t> data, std::vector<param_t> inits,
+           double theta, double sigma,
+           double eps0, std::string distance, Kernel kernel,
+           int max_iter = 100, double entropic_eps = 0.1, double threshold = 1e-4);
+    
+     void set_log() {log = true;}
 
      void updateUrn();
 
-     virtual void updateParams() = 0;
+     void updateParams();
 
-     virtual void generateSyntData() = 0;
+     void generateSyntData();
 
-     virtual void saveCurrParam() = 0;
-
+     void saveCurrParam();
 
      void step();
 
-     std::tuple<arma::vec, arma::mat, double> run(int nrep);
+     double run(int nrep);
+
+     arma::vec get_dists() const { return dist_results; }
+
+     arma::imat get_parts() const { return part_results; }
+
+     std::vector<std::vector<param_t>> get_params_log() const { return param_log; }
 };
 
+#include "abc_class_imp.hpp"
 
-class AbcPyUniv: public AbcPy{
- protected:
+using UnivAbcPy = AbcPy<double, arma::vec, UnivGaussianKernel>;
 
-     // base measure parameters
-     double a0, b0, k0, m0;
-     arma::mat param;
-     arma::mat tparam;
+using MultiAbcPy = AbcPy<arma::vec, mvnorm_param, MultiGaussianKernel>;
 
- public:
-    AbcPyUniv(
-        const arma::mat &data_, double theta, double sigma, double eps0,
-        double a0, double b0, double k0, double m0, std::string distance,
-        int max_iter=100, double entropic_eps=0.1, double threshold=1e-4);
+using TimeSeriesAbcPy = AbcPy<TimeSeries, arma::vec, TimeSeriesKernel>;
 
-    void updateParams();
-    void generateSyntData();
-    void saveCurrParam() {param = tparam;}
-};
+#ifdef USE_R
 
+    using GraphAbcPy = AbcPy<Graph, arma::vec, GraphKernel>;
 
-class AbcPyMultiv: public AbcPy{
- protected:
-
-     // base measure parameters
-     double df, k0;
-     arma::vec m0;
-     arma::mat prior_prec_chol;
-
-     std::vector<arma::vec> mean;
-     std::vector<arma::vec> tmean;
-     std::vector<arma::mat> prec_chol;
-     std::vector<arma::mat> tprec_chol;
-
- public:
-    AbcPyMultiv(
-        const arma::mat &data_, double theta, double sigma, double eps0,
-        double df, const arma::mat& prior_prec_chol,
-        double k0, const arma::vec& m0, std::string distance,
-        int max_iter=100, double entropic_eps=0.1, double threshold=1e-4);
-
-    void print() {}
-
-    void updateParams();
-    void generateSyntData();
-    void saveCurrParam() {
-        mean = tmean;
-        prec_chol = tprec_chol;
-    }
-};
-
-
-// This is UGLY, should inherit from AbcPy
-class AbcPyGraph {
- protected:
-    std::vector<Graph> data;
-    std::vector<Graph> data_synt;
-    int n_nodes;
-
-    GraphSimulator simulator;
-
-    std::vector<arma::vec> param;
-    std::vector<arma::vec> tparam;
-
-    GraphSinkhorn* d;
-    arma::imat part_results;
-    arma::vec dist_results;
-    double curr_dist;
-    arma::ivec part;
-    arma::ivec temp_part;
-    arma::ivec tvec;
-    arma::ivec uniq_temp;
-
-    std::vector<arma::mat> param_results;
-
-    // params
-    double theta, sigma;
-    int n_data;
-    double eps0;
-
-    int n_unique;
-    arma::uvec sort_indices;
-    arma::vec t_diff;
-    double lEsum = 0;
-    double lEsum2 = 0;
-    double eps;
-    double meanEps, meanEps2;
-
-    arma::vec m0;
-    arma::mat prior_var_chol;
-
-public:
-    AbcPyGraph() {}
-    ~AbcPyGraph() {}
-
-    AbcPyGraph(
-        const std::vector<arma::mat> &data_, double theta, double sigma, 
-        double eps0, const arma::mat &prior_var_chol,
-        const arma::vec &m0, std::string distance,
-        const std::vector<arma::vec> &inits,
-        int max_iter = 100, double entropic_eps = 0.1, double threshold = 1e-4);
-
-    void updateUrn();
-
-    void updateParams();
-    
-    void generateSyntData();
-
-    inline void saveCurrParam() {
-        param = tparam;
-    }
-
-    void step();
-
-    std::tuple<
-        arma::vec, arma::imat, double, 
-        std::vector<arma::mat>> run(int nrep);
-};
+#endif
 
 #endif

@@ -1,0 +1,9 @@
+[submodule "lib/stats"]
+	path = lib/stats
+	url = https://github.com/kthohr/stats.git
+[submodule "lib/gcem"]
+	path = lib/gcem
+	url = https://github.com/kthohr/gcem.git
+[submodule "src/lib/carma"]
+	path = src/lib/carma
+	url = https://github.com/RUrlus/carma.git

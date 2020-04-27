@@ -6,24 +6,13 @@
 
 using namespace Rcpp;
 
-// test
-Rcpp::List test(arma::mat data);
-RcppExport SEXP _abcpp_test(SEXP dataSEXP) {
+// run_univariate
+Rcpp::List run_univariate(arma::vec data, int nrep, double theta, double sigma, double m0, double k0, double a0, double b0, double eps, int p, std::string dist, const std::vector<arma::vec>& inits, bool log);
+RcppExport SEXP _abcpp_run_univariate(SEXP dataSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP m0SEXP, SEXP k0SEXP, SEXP a0SEXP, SEXP b0SEXP, SEXP epsSEXP, SEXP pSEXP, SEXP distSEXP, SEXP initsSEXP, SEXP logSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
-    rcpp_result_gen = Rcpp::wrap(test(data));
-    return rcpp_result_gen;
-END_RCPP
-}
-// runAbcMCMC_univ_R
-Rcpp::List runAbcMCMC_univ_R(Rcpp::NumericVector data, int nrep, double theta, double sigma, double m0, double k0, double a0, double b0, double eps, int p, std::string dist);
-RcppExport SEXP _abcpp_runAbcMCMC_univ_R(SEXP dataSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP m0SEXP, SEXP k0SEXP, SEXP a0SEXP, SEXP b0SEXP, SEXP epsSEXP, SEXP pSEXP, SEXP distSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type data(dataSEXP);
     Rcpp::traits::input_parameter< int >::type nrep(nrepSEXP);
     Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
@@ -34,26 +23,93 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
     Rcpp::traits::input_parameter< int >::type p(pSEXP);
     Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
-    rcpp_result_gen = Rcpp::wrap(runAbcMCMC_univ_R(data, nrep, theta, sigma, m0, k0, a0, b0, eps, p, dist));
+    Rcpp::traits::input_parameter< const std::vector<arma::vec>& >::type inits(initsSEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_univariate(data, nrep, theta, sigma, m0, k0, a0, b0, eps, p, dist, inits, log));
     return rcpp_result_gen;
 END_RCPP
 }
-// runAbcMCMC_graph
-Rcpp::List runAbcMCMC_graph(std::vector<arma::mat> data, int nrep, double theta, double sigma, arma::vec m0, arma::mat var_chol, const std::vector<arma::vec>& inits, double eps, std::string dist);
-RcppExport SEXP _abcpp_runAbcMCMC_graph(SEXP dataSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP m0SEXP, SEXP var_cholSEXP, SEXP initsSEXP, SEXP epsSEXP, SEXP distSEXP) {
+// run_multivariate
+Rcpp::List run_multivariate(arma::mat data, int nrep, double theta, double sigma, arma::vec m0, double k0, double df, arma::mat prec_chol, double eps, int p, std::string dist, const Rcpp::List& inits_, bool log);
+RcppExport SEXP _abcpp_run_multivariate(SEXP dataSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP m0SEXP, SEXP k0SEXP, SEXP dfSEXP, SEXP prec_cholSEXP, SEXP epsSEXP, SEXP pSEXP, SEXP distSEXP, SEXP inits_SEXP, SEXP logSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<arma::mat> >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
     Rcpp::traits::input_parameter< int >::type nrep(nrepSEXP);
     Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
     Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type m0(m0SEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type var_chol(var_cholSEXP);
-    Rcpp::traits::input_parameter< const std::vector<arma::vec>& >::type inits(initsSEXP);
+    Rcpp::traits::input_parameter< double >::type k0(k0SEXP);
+    Rcpp::traits::input_parameter< double >::type df(dfSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type prec_chol(prec_cholSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::List& >::type inits_(inits_SEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_multivariate(data, nrep, theta, sigma, m0, k0, df, prec_chol, eps, p, dist, inits_, log));
+    return rcpp_result_gen;
+END_RCPP
+}
+// run_timeseries
+Rcpp::List run_timeseries(arma::mat data, double mu_mean, double mu_sd, double beta_mean, double beta_sd, double xi_rate, double omega_sq_rate, double lambda_rate, int nrep, double theta, double sigma, double eps, std::string dist, std::vector<arma::vec> inits, bool log);
+RcppExport SEXP _abcpp_run_timeseries(SEXP dataSEXP, SEXP mu_meanSEXP, SEXP mu_sdSEXP, SEXP beta_meanSEXP, SEXP beta_sdSEXP, SEXP xi_rateSEXP, SEXP omega_sq_rateSEXP, SEXP lambda_rateSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP epsSEXP, SEXP distSEXP, SEXP initsSEXP, SEXP logSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< double >::type mu_mean(mu_meanSEXP);
+    Rcpp::traits::input_parameter< double >::type mu_sd(mu_sdSEXP);
+    Rcpp::traits::input_parameter< double >::type beta_mean(beta_meanSEXP);
+    Rcpp::traits::input_parameter< double >::type beta_sd(beta_sdSEXP);
+    Rcpp::traits::input_parameter< double >::type xi_rate(xi_rateSEXP);
+    Rcpp::traits::input_parameter< double >::type omega_sq_rate(omega_sq_rateSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda_rate(lambda_rateSEXP);
+    Rcpp::traits::input_parameter< int >::type nrep(nrepSEXP);
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
     Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
     Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
-    rcpp_result_gen = Rcpp::wrap(runAbcMCMC_graph(data, nrep, theta, sigma, m0, var_chol, inits, eps, dist));
+    Rcpp::traits::input_parameter< std::vector<arma::vec> >::type inits(initsSEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_timeseries(data, mu_mean, mu_sd, beta_mean, beta_sd, xi_rate, omega_sq_rate, lambda_rate, nrep, theta, sigma, eps, dist, inits, log));
+    return rcpp_result_gen;
+END_RCPP
+}
+// run_graph
+Rcpp::List run_graph(std::vector<arma::mat> data, arma::vec m0, arma::mat var_chol, int nrep, double theta, double sigma, double eps, std::string dist, const std::vector<arma::vec>& inits, bool log);
+RcppExport SEXP _abcpp_run_graph(SEXP dataSEXP, SEXP m0SEXP, SEXP var_cholSEXP, SEXP nrepSEXP, SEXP thetaSEXP, SEXP sigmaSEXP, SEXP epsSEXP, SEXP distSEXP, SEXP initsSEXP, SEXP logSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<arma::mat> >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type m0(m0SEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type var_chol(var_cholSEXP);
+    Rcpp::traits::input_parameter< int >::type nrep(nrepSEXP);
+    Rcpp::traits::input_parameter< double >::type theta(thetaSEXP);
+    Rcpp::traits::input_parameter< double >::type sigma(sigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type eps(epsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type dist(distSEXP);
+    Rcpp::traits::input_parameter< const std::vector<arma::vec>& >::type inits(initsSEXP);
+    Rcpp::traits::input_parameter< bool >::type log(logSEXP);
+    rcpp_result_gen = Rcpp::wrap(run_graph(data, m0, var_chol, nrep, theta, sigma, eps, dist, inits, log));
+    return rcpp_result_gen;
+END_RCPP
+}
+// simulate_ts
+arma::vec simulate_ts(int num_steps, double mu, double beta, double xi, double omega_sq, double lambda);
+RcppExport SEXP _abcpp_simulate_ts(SEXP num_stepsSEXP, SEXP muSEXP, SEXP betaSEXP, SEXP xiSEXP, SEXP omega_sqSEXP, SEXP lambdaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type num_steps(num_stepsSEXP);
+    Rcpp::traits::input_parameter< double >::type mu(muSEXP);
+    Rcpp::traits::input_parameter< double >::type beta(betaSEXP);
+    Rcpp::traits::input_parameter< double >::type xi(xiSEXP);
+    Rcpp::traits::input_parameter< double >::type omega_sq(omega_sqSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda(lambdaSEXP);
+    rcpp_result_gen = Rcpp::wrap(simulate_ts(num_steps, mu, beta, xi, omega_sq, lambda));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -82,9 +138,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_abcpp_test", (DL_FUNC) &_abcpp_test, 1},
-    {"_abcpp_runAbcMCMC_univ_R", (DL_FUNC) &_abcpp_runAbcMCMC_univ_R, 11},
-    {"_abcpp_runAbcMCMC_graph", (DL_FUNC) &_abcpp_runAbcMCMC_graph, 9},
+    {"_abcpp_run_univariate", (DL_FUNC) &_abcpp_run_univariate, 13},
+    {"_abcpp_run_multivariate", (DL_FUNC) &_abcpp_run_multivariate, 13},
+    {"_abcpp_run_timeseries", (DL_FUNC) &_abcpp_run_timeseries, 15},
+    {"_abcpp_run_graph", (DL_FUNC) &_abcpp_run_graph, 10},
+    {"_abcpp_simulate_ts", (DL_FUNC) &_abcpp_simulate_ts, 6},
     {"_abcpp_graph_dist_R", (DL_FUNC) &_abcpp_graph_dist_R, 2},
     {"_abcpp_simulate_graph", (DL_FUNC) &_abcpp_simulate_graph, 1},
     {NULL, NULL, 0}

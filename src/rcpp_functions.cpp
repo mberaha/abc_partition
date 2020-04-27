@@ -5,74 +5,148 @@
 #include <tuple>
 #include "abc_py_class.hpp"
 #include "graph.hpp"
+#include "time_series.hpp"
+#include "kernels.hpp"
 
 // [[Rcpp::export]]
-Rcpp::List test(arma::mat data) {
-    arma::mat newdata(100, 1);
-    newdata.fill(0.1);
-    Rcpp::List res;
-    return res;
-}
-
-// [[Rcpp::export]]
-Rcpp::List runAbcMCMC_univ_R(
-          Rcpp::NumericVector data, int nrep=1, double theta=1.0,
-          double sigma=0.2, double m0=0.0, double k0=0.5, double a0=2.0,
-          double b0=2.0, double eps=10.0, int p=1,
-          std::string dist="sorting") {
-  Rcpp::Rcout << "run" << std::endl;
-  arma::vec datavec(data.begin(), data.size(), false);
-  Rcpp::Rcout << "HERE" << std::endl;
-  AbcPyUniv abc_mcm(
-      datavec, theta, sigma, eps, a0, b0, k0, m0, dist);
-  std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
-
-  Rcpp::List res;
-  res["dist"] = std::get<0>(out);
-  res["part_results"] = std::get<1>(out);
-  res["time"] = std::get<2>(out);
-  return res;
-}
-//
-// // [[Rcpp::export]]
-// Rcpp::List runAbcMCMC_multi_R(
-//           arma::mat data, int nrep, double theta,
-//           double sigma, arma::vec m0, double k0, double df,
-//           arma::mat prec_chol, double eps, int p,
-//           std::string dist="sinkhorn") {
-//
-//   AbcPyMultiv abc_mcm(
-//       data, theta, sigma, eps, df, prec_chol, k0, m0, dist);
-//   std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
-//
-//   Rcpp::List res;
-//   res["dist"] = std::get<0>(out);
-//   res["part_results"] = std::get<1>(out);
-//   res["time"] = std::get<2>(out);
-//   return res;
-// }
-
-// [[Rcpp::export]]
-Rcpp::List runAbcMCMC_graph(
-    std::vector<arma::mat> data, int nrep, double theta,
-    double sigma, arma::vec m0, arma::mat var_chol,
-    const std::vector<arma::vec> &inits, double eps, std::string dist)
+Rcpp::List run_univariate(
+    arma::vec data, int nrep, double theta, double sigma, double m0,
+    double k0, double a0, double b0, double eps, int p,
+    std::string dist, const std::vector<arma::vec> &inits,
+    bool log=false)
 {
-    Rcpp::Rcout << "run" << std::endl;
-    Rcpp::Rcout << "HERE" << std::endl;
-    AbcPyGraph abc_mcm(
-        data, theta, sigma, eps, var_chol, m0, dist, inits);
 
-    std::tuple<
-        arma::vec, arma::imat, double,
-        std::vector<arma::mat>> out = abc_mcm.run(nrep);
+    UnivGaussianKernel kernel(m0, a0, b0, k0);
+    std::vector<double> datavec = arma::conv_to<std::vector<double>>::from(data);
+    UnivAbcPy abc_mcmc(datavec, inits, theta, sigma, eps, dist, kernel);
+
+    if (log)
+        abc_mcmc.set_log();
+
+    double time = abc_mcmc.run(nrep);
 
     Rcpp::List res;
-    res["dist"] = std::get<0>(out);
-    res["part_results"] = std::get<1>(out);
-    res["time"] = std::get<2>(out);
-    res["param_results"] = std::get<3>(out);
+    res["dist"] = abc_mcmc.get_dists();
+    res["part_results"] = abc_mcmc.get_parts();
+    res["time"] = time;
+    // res["param_log"] = abc_mcmc.get_params_log();
     return res;
+}
+
+// [[Rcpp::export]]
+Rcpp::List run_multivariate(
+    arma::mat data, int nrep, double theta, double sigma, arma::vec m0, 
+    double k0, double df, arma::mat prec_chol, double eps, int p,
+    std::string dist, const Rcpp::List &inits_,
+    bool log=true)
+{
+    MultiGaussianKernel kernel(m0, prec_chol, df, k0);
+
+    std::vector<mvnorm_param> inits(inits_.size());
+    for (int i=0; i < inits_.size(); i++) {
+        Rcpp::List curr = Rcpp::as<Rcpp::List>(inits_[i]);
+        arma::vec mu = Rcpp::as<arma::vec>(curr[0]);
+        arma::mat prec_chol = Rcpp::as<arma::mat>(curr[1]);
+        inits[i] = std::make_tuple(mu, prec_chol);
+    }
+
+    MultiAbcPy abc_mcmc(to_vectors(data), inits, theta, sigma,
+                        eps, dist, kernel);
+
+    if (log)
+        abc_mcmc.set_log();
+
+    double time = abc_mcmc.run(nrep);
+
+    Rcpp::List res;
+    res["dist"] = abc_mcmc.get_dists();
+    res["part_results"] = abc_mcmc.get_parts();
+    res["time"] = time;
+    // res["param_log"] = vstack(abc_mcmc.get_params_log());
+    return res;
+}
+
+// [[Rcpp::export]]
+Rcpp::List run_timeseries(
+    arma::mat data, double mu_mean, double mu_sd, double beta_mean,
+    double beta_sd, double xi_rate, double omega_sq_rate, double lambda_rate,
+    int nrep, double theta, double sigma, double eps,
+    std::string dist, std::vector<arma::vec> inits,
+    bool log = false) 
+{
+    int nsteps = data.n_cols;
+
+    TimeSeriesKernel kernel(
+        mu_mean, mu_sd, beta_mean, beta_sd, xi_rate, omega_sq_rate,
+        lambda_rate, nsteps);
+
+    std::vector<TimeSeries> datavec(data.n_rows);
+    for (int i = 0; i < data.n_rows; i++)
+        datavec[i] = TimeSeries(data.row(i).t());
+
+    TimeSeriesAbcPy abc_mcmc(datavec, inits, theta, sigma,
+                             eps, dist, kernel);
+
+    if (log)
+        abc_mcmc.set_log();
+
+    double time = abc_mcmc.run(nrep);
+    Rcpp::List res;
+    res["dist"] = abc_mcmc.get_dists();
+    res["part_results"] = abc_mcmc.get_parts();
+    res["time"] = time;
+    // res["param_log"] = abc_mcmc.get_params_log();
+    return res;
+}
+
+// [[Rcpp::export]]
+Rcpp::List run_graph(
+    std::vector<arma::mat> data, arma::vec m0, arma::mat var_chol,
+    int nrep, double theta, double sigma, double eps,
+    std::string dist, const std::vector<arma::vec> &inits,
+    bool log = false)
+{
+    Rcpp::Rcout << "1" << std::endl;
+    int n_nodes = data[0].n_rows;
+    Rcpp::Rcout << "n_nodes: " << n_nodes << std::endl;
+    GraphKernel kernel(n_nodes, m0, var_chol);
+    Rcpp::Rcout << "2" << std::endl;
+
+    std::vector<Graph> graphs(data.size());
+    for (int i=0; i < data.size(); i++)
+        graphs[i] = Graph(data[i]);
+
+    Rcpp::Rcout << "3" << std::endl;
+
+    GraphAbcPy abc_mcmc(
+        graphs, inits, theta, sigma, eps, dist, kernel);
+
+    Rcpp::Rcout << "4" << std::endl;
+
+    if (log)
+        abc_mcmc.set_log();
+
+    double time = abc_mcmc.run(nrep);
+
+    Rcpp::Rcout << "5" << std::endl;
+
+    Rcpp::List res;
+    res["dist"] = abc_mcmc.get_dists();
+    res["part_results"] = abc_mcmc.get_parts();
+    res["time"] = time;
+    // res["param_log"] = abc_mcmc.get_params_log();
+
+    return res;
+}
+
+// [[Rcpp::export]]
+arma::vec simulate_ts(
+    int num_steps, double mu, double beta, double xi, double omega_sq,
+    double lambda)
+{
+    TimeSeriesKernel kernel(num_steps);
+    TimeSeries out = kernel.generate_single(mu, beta, xi, omega_sq, lambda);
+    return out.get_ts();
 }
 
 // [[Rcpp::export]]
