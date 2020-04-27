@@ -27,6 +27,10 @@ export mkPrefix=/u/sw
 source $mkPrefix/etc/profile
 module load gcc-glibc/7
 module load R
+module load cgal
+module load boost
+
+export LD_LIBRARY_PATH=/u/sw/pkgs/toolchains/gcc-glibc/7/pkgs/cgal/4.9/lib64:$LD_LIBRARY_PATH
 
 #-------------------RUN THE EXECUTABLE---------------------------------#
 
