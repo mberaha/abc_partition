@@ -95,14 +95,13 @@ protected:
 
     int n_nodes;
     arma::vec m0;
-    arma::mat prior_prec_chol;
-
+    arma::mat prior_var_chol;
 
 public:
     GraphKernel() {}
     ~GraphKernel() {}
 
-    GraphKernel(int n_nodes, arma::vec m0, arma::mat prior_prec_chol);
+    GraphKernel(int n_nodes, arma::vec m0, arma::mat prior_var_chol);
 
     arma::vec sample_prior();
 

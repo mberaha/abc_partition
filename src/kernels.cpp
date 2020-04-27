@@ -170,14 +170,16 @@ std::vector<arma::vec> TimeSeriesKernel::make_default_init()
 
 #ifdef USE_R
 
-GraphKernel::GraphKernel(int n_nodes, arma::vec m0, arma::mat prior_prec_chol) {
+GraphKernel::GraphKernel(int n_nodes, arma::vec m0, arma::mat prior_var_chol)
+{
     this->n_nodes = n_nodes;
     this->m0 = m0;
-    this->prior_prec_chol = prior_prec_chol;
+    this->prior_var_chol = prior_var_chol;
 }
 
 arma::vec GraphKernel::sample_prior() {
-    return rnorm_prec_chol(m0, prior_prec_chol);
+    arma::vec z = arma::randn<arma::vec>(mean.n_elem);
+    return m0 + z * prior_var_chol;
 }
 
 std::vector<Graph> GraphKernel::generate_dataset(
