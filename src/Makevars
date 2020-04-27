@@ -1,14 +1,15 @@
 CXX_STD = CXX14
 
 SOURCES = abc_py_class.cpp distance.cpp distributions.cpp wasserstein.cpp \
-          rcpp_functions.cpp graph.cpp utils.cpp
+          rcpp_functions.cpp graph.cpp utils.cpp kernels.cpp \
+          time_series.cpp
 OT_SRCS = ot/emd.cpp ot/sinkhorn.cpp
 ALL_SOURCES = $(SOURCES) $(OT_SRCS)
 
 OBJECTS = RcppExports.o $(ALL_SOURCES:.cpp=.o)
 
-PKG_CPPFLAGS = -I. -I./ot -DUSE_R -DARMA_USE_OPENMP 
-PKG_CXX14FLAGS = -O3 -ftree-vectorize -funroll-loops -fopenmp
+PKG_CPPFLAGS = -I. -I./ot -I../lib/stats/include -I../lib/gcem/include -DUSE_R -DARMA_USE_OPENMP 
+PKG_CXX14FLAGS = -I./ot -I./lib/stats/include -I"lib/gcem/include" -O3 -ftree-vectorize -funroll-loops -fopenmp
 
 all: $(SHLIB)
 

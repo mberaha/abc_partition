@@ -5,84 +5,185 @@
 #include "src/include_arma.hpp"
 #include <tuple>
 #include "src/abc_py_class.hpp"
+#include "src/time_series.hpp"
+
+#include "carma/carma.h"
 
 namespace py = pybind11;
 typedef py::array_t<double, py::array::f_style | py::array::forcecast> pyarr_d;
 typedef py::array_t<arma::uword, py::array::forcecast> pyarr_u;
+typedef py::array_t<int, py::array::forcecast> pyarr_i;
+
+using py_return_t_univ = std::tuple<
+    pyarr_d, pyarr_i, double, std::vector<std::vector<pyarr_d>>>;
+
+using py_return_t_multi = std::tuple<
+    pyarr_d, pyarr_i, double, std::vector<std::vector<std::tuple<pyarr_d, pyarr_d>>>>;
+
+using py_return_t_ts = std::tuple<
+    pyarr_d, pyarr_i, double, std::vector<std::vector<pyarr_d>>>;
 
 
-inline arma::mat py_to_mat(pyarr_d& pmat) {
-	py::buffer_info info = pmat.request();
-	arma::mat amat;
-	if(info.ndim == 1) {
-		amat = arma::mat(reinterpret_cast<double*>(info.ptr),info.shape[0],1);
-	} else {
-		amat = arma::mat(reinterpret_cast<double*>(info.ptr),info.shape[0],info.shape[1]);
-	}
-	return amat;
-}
+py_return_t_univ run_univariate(
+    std::vector<double> data, double m0, double a0, double b0, double k0,
+    int nrep, double theta, double sigma, double eps, int p = 1,
+    std::string dist = "sorting", std::vector<std::vector<double>> inits_ = {},
+    bool log=false)
+{
+    UnivGaussianKernel kernel(m0, a0, b0, k0);
 
-std::tuple<std::vector<double>, std::vector<std::vector<double>>, double>
-runAbcMCMC_univ(std::vector<double> data, int nrep, double theta,
-          double sigma, double m0, double k0, double a0, double b0,
-          double eps, int p, std::string dist="wasserstein") {
+    std::vector<arma::vec> inits;
+    if (inits_.size() == 0)
+        inits = kernel.make_default_init();
+    else
+        for (int i = 0; i < inits_.size(); i++)
+            inits.push_back(arma::conv_to<arma::vec>::from(inits_[i]));
 
-    arma::vec datavec = arma::conv_to<arma::vec>::from(data);
+    UnivAbcPy abc_mcmc(data, inits, theta, sigma, eps, dist, kernel);
+    if (log)
+        abc_mcmc.set_log();
 
-    AbcPyUniv abc_mcm(datavec, theta, sigma, eps, a0, b0, k0, m0, dist);
-    std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
+    double time = abc_mcmc.run(nrep);
 
-    int nrows = std::get<1>(out).n_rows;
-    std::vector<std::vector<double>> parts(nrows);
-    for (int i=0; i < nrows; i++) {
-        parts[i] = arma::conv_to<std::vector<double>>::from(
-            std::get<1>(out).row(i));
+    std::vector<std::vector<arma::vec>> params_log = abc_mcmc.get_params_log();
+    std::vector<std::vector<pyarr_d>> params_log_py(params_log.size());
+    for (int i=0; i < params_log.size(); i++) {
+        std::vector<pyarr_d> curr(params_log[i].size());
+        for (int k=0; k < params_log[i].size(); k++)
+            curr[k] = carma::mat_to_arr(params_log[i][k]);
+
+        params_log_py[i] = curr;
     }
 
+    arma::vec dists = abc_mcmc.get_dists();
+    arma::imat parts = abc_mcmc.get_parts();
+
     return std::make_tuple(
-        arma::conv_to<std::vector<double>>::from(std::get<0>(out)),
-        parts,
-        std::get<2>(out));
+        carma::mat_to_arr(dists), carma::mat_to_arr(parts), time, params_log_py);
 }
 
-
-std::tuple<std::vector<double>, std::vector<std::vector<double>>, double>
-runAbcMCMC_multi(pyarr_d data, int nrep, double theta,
-          double sigma, pyarr_d m0, double k0, double df,
-          pyarr_d prec_chol, double eps, int p,
-          std::string dist="wasserstein") {
-
-    arma::mat datamat = py_to_mat(data);
-    arma::vec m0p = py_to_mat(m0);
-    arma::mat prior_prec_chol = py_to_mat(prec_chol);
-
-    AbcPyMultiv abc_mcm(
-        datamat, theta, sigma, eps, df, prior_prec_chol, k0, m0p, dist);
-    std::tuple<arma::vec, arma::mat, double> out = abc_mcm.run(nrep);
-
-    int nrows = std::get<1>(out).n_rows;
-    std::vector<std::vector<double>> parts(nrows);
-    for (int i=0; i < nrows; i++) {
-        parts[i] = arma::conv_to<std::vector<double>>::from(
-            std::get<1>(out).row(i));
+py_return_t_multi run_multivariate(
+    pyarr_d data, pyarr_d m0, double df, pyarr_d prec_chol, double k0,
+    int nrep, double theta, double sigma, double eps, int p = 1,
+    std::string dist = "sorting",
+    std::vector<std::tuple<pyarr_d, pyarr_d>> inits_ = {}, bool log = false)
+{
+    MultiGaussianKernel kernel(
+        carma::arr_to_mat<double>(m0), 
+        carma::arr_to_mat<double>(prec_chol), df, k0);
+    std::vector<mvnorm_param> inits;
+    if (inits_.size() == 0)
+        inits = kernel.make_default_init();
+    else {
+        for (int i=0; i < inits_.size(); i++) {
+            arma::vec mu = carma::arr_to_mat<double>(std::get<0>(inits_[i]));
+            arma::mat sigma = carma::arr_to_mat<double>(std::get<1>(inits_[i]));
+            inits.push_back(std::make_tuple(mu, sigma));
+        }
     }
 
+    MultiAbcPy abc_mcmc(
+        to_vectors(carma::arr_to_mat<double>(data)), 
+        inits, theta, sigma, eps, dist, kernel);
+    if (log)
+        abc_mcmc.set_log();
+
+    double time = abc_mcmc.run(nrep);
+
+    std::vector<std::vector<mvnorm_param>> params_log;
+
+    std::vector<std::vector<std::tuple<pyarr_d, pyarr_d>>> params_log_py(params_log.size());
+    for (int i = 0; i < params_log.size(); i++) {
+        std::vector<std::tuple<pyarr_d, pyarr_d>> curr(params_log[i].size());
+        for (int k=0; k < params_log[i].size(); k++) {
+            pyarr_d mean = carma::mat_to_arr<double>(std::get<0>(params_log[i][k]));
+            pyarr_d sigma_chol = carma::mat_to_arr<double>(std::get<1>(params_log[i][k]));
+            curr[k] = std::make_tuple(mean, sigma_chol);
+        }
+        params_log_py[i] = curr;
+    }
+
+    arma::vec dists = abc_mcmc.get_dists();
+    arma::imat parts = abc_mcmc.get_parts();
+
     return std::make_tuple(
-        arma::conv_to<std::vector<double>>::from(std::get<0>(out)),
-        parts,
-        std::get<2>(out));
+        carma::mat_to_arr(dists), carma::mat_to_arr(parts), time, params_log_py);
 }
 
+py_return_t_ts run_timeseries(
+    pyarr_d data, double mu_mean, double mu_sd, double beta_mean,
+    double beta_sd, double xi_rate, double omega_sq_rate, double lambda_rate,
+    int nrep, double theta, double sigma, double eps, int p = 1,
+    std::string dist = "sorting", std::vector<std::vector<double>> inits_ = {},
+    bool log = false)
+{
+    arma::mat datamat = carma::arr_to_mat<double>(data);
+    int nsteps = datamat.n_cols;
 
+    TimeSeriesKernel kernel(
+        mu_mean, mu_sd, beta_mean, beta_sd, xi_rate, omega_sq_rate,
+        lambda_rate, nsteps);
 
+    std::vector<arma::vec> inits;
+    if (inits_.size() == 0)
+        inits = kernel.make_default_init();
+    else {
+        for (int i=0; i < inits_.size(); i++)
+            inits.push_back(arma::conv_to<arma::vec>::from(inits_[i]));
+    }
 
-PYBIND11_MODULE(abcpp, m) {
+    std::vector<TimeSeries> datavec(datamat.n_rows);
+    for (int i = 0; i < datamat.n_rows; i++)
+        datavec[i] = TimeSeries(datamat.row(i).t());
+
+    TimeSeriesAbcPy abc_mcmc(datavec, inits, theta, sigma,
+                             eps, dist, kernel);
+
+    if (log)
+        abc_mcmc.set_log();
+
+    double time = abc_mcmc.run(nrep);
+
+    std::vector<std::vector<arma::vec>> params_log = abc_mcmc.get_params_log();
+    std::vector<std::vector<pyarr_d>> params_log_py(params_log.size());
+    for (int i = 0; i < params_log.size(); i++)
+    {
+        std::vector<pyarr_d> curr(params_log[i].size());
+        for (int k = 0; k < params_log[i].size(); k++)
+            curr[k] = carma::mat_to_arr(params_log[i][k]);
+
+        params_log_py[i] = curr;
+    }
+
+    arma::vec dists = abc_mcmc.get_dists();
+    arma::imat parts = abc_mcmc.get_parts();
+    std::cout << "parts \n" << parts << std::endl;
+
+    return std::make_tuple(
+        carma::mat_to_arr(dists), carma::mat_to_arr(parts), time, params_log_py);
+}
+
+std::vector<double> simulate_ts(
+    int num_steps, double mu, double beta, double xi, double omega_sq, 
+    double lambda) 
+{
+    TimeSeriesKernel kernel(num_steps);
+    TimeSeries out = kernel.generate_single(mu, beta, xi, omega_sq, lambda);
+    return arma::conv_to<std::vector<double>>::from(out.get_ts());
+}
+
+PYBIND11_MODULE(abcpp, m)
+{
     m.doc() = "aaa"; // optional module docstring
 
-    m.def("runAbcMCMC_univ", &runAbcMCMC_univ,
+    m.def("run_univariate", &run_univariate,
           "...");
 
-    m.def("runAbcMCMC_multi", &runAbcMCMC_multi,
-        "...");
+    m.def("run_multivariate", &run_multivariate,
+          "...");
 
+    m.def("run_timeseries", &run_timeseries,
+          "...");
+
+    m.def("simulate_ts", &simulate_ts, "...");
 }

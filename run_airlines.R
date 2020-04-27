@@ -19,12 +19,13 @@ load_all(reset=T, recompile=T)
 
 var_chol = diag(1, 4, 4) * 10
 m0 = c(-4, 3, 15, -20)
-eps = 300
+eps = 90
 
 inits = list(c(-3, 2, -1, -1), 
              c(-10, 0, 0, -15),
              c(-1, 10, 30, -40))
 
-out = runAbcMCMC_graph(networks, 100000, 1, 0.1, m0, var_chol, inits, eps, "aaaa")
+nrep = 100000
+out = run_graph(networks, m0, var_chol, nrep, 1, 0.1, inits, eps, "wasserstein")
 saveRDS(out, file="airlines_out.RData")
 

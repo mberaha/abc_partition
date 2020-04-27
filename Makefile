@@ -2,21 +2,25 @@ ROOT_DIR := .
 SRC_DIR := $(ROOT_DIR)/src
 SPIKES_DIR := $(SRC_DIR)/spikes
 OT_DIR := $(SRC_DIR)/ot
+CGAL_DIR := ~/CGAL-5.0.2
 
 CXX = g++
 CFLAGS = \
 	-std=c++1y \
-	-O3 -ftree-vectorize -funroll-loops -fopenmp \
 	-MMD \
 	-I$(OT_DIR) \
-	-fPIC
+	-I$(CGAL_DIR)/include \
+	-I$(ROOT_DIR)/lib/stats/include \
+	-I$(ROOT_DIR)/lib/gcem/include \
+	-fPIC -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON \
+	-O3  -ftree-vectorize -funroll-loops -fopenmp
 
 LDLIBS = -larmadillo -lblas -llapack
 LDFLAGS = -O3 -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG \
 					-DARMA_USE_OPENMP
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
-OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp, $(OUR_SRCS_T))
+OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/abc_py_class.cpp, $(OUR_SRCS_T))
 OUR_SRCS = $(filter-out $(SRC_DIR)/rcpp_functions.cpp, $(OUR_SRCS_TT))
 
 OT_SRCS = $(wildcard $(OT_DIR)/*.cpp)
@@ -41,8 +45,9 @@ generate_lib: $(OBJS)
 	g++ -shared $(OBJS) -o libabc.so $(LDLIBS)
 
 generate_pybind: $(OBJS)
-	$(CXX) -shared $(CFLAGS) `python3 -m pybind11 --includes` \
-		python_exports.cpp -o abcpp`python3-config --extension-suffix` \
+	$(CXX) -shared $(CFLAGS) -I$(SRC_DIR)/lib/carma/include/ \
+		 `/usr/bin/python3.8 -m pybind11 --includes` \
+		python_exports.cpp -o abcpp`/usr/bin/python3.8-config --extension-suffix` \
 		$(OBJS) $(LDLIBS)
 
 
@@ -58,4 +63,4 @@ $(SPIKES_OBJS): %.o: %.cpp
 # -include $(OBJS:%.o=%.d)
 
 clean:
-	rm $(OBJS) $(SPIKES_OBJS)
+	rm $(OBJS) $(SPIKES_OBJS) $(OBJS:%.o=%.d)
