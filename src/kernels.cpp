@@ -178,8 +178,8 @@ GraphKernel::GraphKernel(int n_nodes, arma::vec m0, arma::mat prior_var_chol)
 }
 
 arma::vec GraphKernel::sample_prior() {
-    arma::vec z = arma::randn<arma::vec>(mean.n_elem);
-    return m0 + z * prior_var_chol;
+    arma::vec z = arma::randn<arma::vec>(m0.n_elem);
+    return m0 + prior_var_chol * z;
 }
 
 std::vector<Graph> GraphKernel::generate_dataset(

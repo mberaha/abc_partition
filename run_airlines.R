@@ -25,7 +25,7 @@ inits = list(c(-3, 2, -1, -1),
              c(-10, 0, 0, -15),
              c(-1, 10, 30, -40))
 
-nrep = 100000
-out = run_graph(networks, m0, var_chol, nrep, 1, 0.1, inits, eps, "wasserstein")
-saveRDS(out, file="airlines_out.RData")
+nrep = 10
+out = run_graph(networks, m0, var_chol, nrep, 1, 0.1, eps, "wasserstein", inits)
+# saveRDS(out, file="airlines_out.RData")
 
