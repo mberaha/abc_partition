@@ -8,6 +8,9 @@ CXX = g++
 CFLAGS = \
 	-std=c++1y \
 	-MMD \
+	-I${HOMEBREW_PREFIX}/include \
+    -I${ARMADILLO_DIR}/include \
+	-I${BOOST_DIR}/include \
 	-I$(OT_DIR) \
 	-I$(CGAL_DIR)/include \
 	-I$(ROOT_DIR)/lib/stats/include \
@@ -15,9 +18,9 @@ CFLAGS = \
 	-fPIC -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON \
 	-O3  -ftree-vectorize -funroll-loops -fopenmp
 
-LDLIBS = -larmadillo -lblas -llapack
-LDFLAGS = -O3 -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG \
-					-DARMA_USE_OPENMP
+LDLIBS = -lstdc++  -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib -L${HOMEBREW_PREFIX}/lib
+LDFLAGS = -std=c++14 -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG \
+		  -DARMA_USE_OPENMP
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
 OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/abc_py_class.cpp, $(OUR_SRCS_T))
