@@ -19,6 +19,7 @@ source $mkPrefix/etc/profile
 module load gcc-glibc/11
 module load cgal
 module load boost
+module load pybind11
 
 export CGAL_DIR=${mkCgalPrefix}
 export PYTHON="/u/sw/toolchains/gcc-glibc/11/base/bin/python3"

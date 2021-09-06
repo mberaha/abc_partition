@@ -49,8 +49,8 @@ generate_lib: $(OBJS)
 
 generate_pybind: $(OBJS)
 	$(CXX) -shared $(CFLAGS) -I$(SRC_DIR)/lib/carma/include/ \
-		 `/usr/bin/python3.8 -m pybind11 --includes` \
-		python_exports.cpp -o abcpp`/usr/bin/python3.8-config --extension-suffix` \
+		 `${PYTHON3} -m pybind11 --includes` \
+		python_exports.cpp -o abcpp`${PYTHON3}-config --extension-suffix` \
 		$(OBJS) $(LDLIBS)
 
 
