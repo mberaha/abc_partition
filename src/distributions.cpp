@@ -39,3 +39,13 @@ arma::vec rnorm_prec_chol(const arma::vec& mean, const arma::mat& chol_prec) {
     arma::vec z = arma::randn<arma::vec>(mean.n_elem);
     return mean + arma::solve(chol_prec, z);
 }
+
+arma::vec rnorm_chol(const arma::vec& mean, const arma::mat& cov_chol) {
+    arma::vec z = arma::randn<arma::vec>(mean.n_elem);
+    return mean + cov_chol * z;
+}
+
+// arma::vec rgandk_biv(double rho, gandk_param param) {
+//   MultiGandKKernel kern(rho);
+//   return kern.rand_from_param(param);
+// }

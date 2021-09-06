@@ -6,11 +6,11 @@
 template <typename data_t, typename param_t, class Kernel>
 AbcPy<data_t, param_t, Kernel>::AbcPy(
     std::vector<data_t> data, std::vector<param_t> inits,
-    double theta, double sigma, double eps0,
+    double theta, double sigma, double eps0, double eps_star,
     std::string distance, Kernel kernel, int max_iter,
     double entropic_eps, double threshold) : 
         data(data), n_data(data.size()), theta(theta),
-        sigma(sigma), eps0(eps0), kernel(kernel)
+        sigma(sigma), eps0(eps0), eps_star(eps_star), kernel(kernel)
 {
 
     if (distance == "sinkhorn")
@@ -24,12 +24,15 @@ AbcPy<data_t, param_t, Kernel>::AbcPy(
 
     param = inits;
     tparam = inits;
-    // part = arma::randi(data.size(), arma::distr_param(0, inits.size() - 1));
-    part = arma::ivec(data.size(), arma::fill::zeros);
-    part.tail(int(data.size() / 2)).fill(1);
-    std::cout << "part: " << part.t() << std::endl;
+    part = arma::randi(data.size(), arma::distr_param(0, inits.size() - 1));
+    // part = arma::ivec(data.size(), arma::fill::zeros);
+    // part.tail(int(data.size() / 2)).fill(1);
+    // std::cout << "part: " << part.t() << std::endl;
     temp_part = part;
+    // std::cout << "generating dataset" << std::endl;
     data_synt = kernel.generate_dataset(temp_part, tparam);
+    // std::cout << "generating dataset - DONE" << std::endl;
+
 }
 
 template <typename data_t, typename param_t, class Kernel>
@@ -126,51 +129,100 @@ void AbcPy<data_t, param_t, Kernel>::saveCurrParam()
 }
 
 template <typename data_t, typename param_t, class Kernel>
-double AbcPy<data_t, param_t, Kernel>::run(int nrep)
-{
-    dist_results.resize(nrep);
-    part_results.resize(nrep, n_data);
+double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_burn) {
+    dist_results.resize(nrep + 1);
+    part_results.resize(nrep + 1, n_data);
     arma::ivec real_data_part = part;
+
+    std::cout << "data: " << data.size() << std::endl;
+
     if (log)
         param_log.resize(nrep);
 
     int start_s = clock();
-    for (int iter = 0; iter < nrep; iter++)
-    {
+
+    int n_accept = 0;
+    int iter = 0;
+    eps = eps0;
+    std::cout << "eps0: " << eps0 << std::endl;
+
+    while (n_accept < nrep) {
+        iter += 1;
         step();
         std::tuple<arma::uvec, double> dist_out = d->compute(data, data_synt);
-        dist_results(iter) = std::get<1>(dist_out);
-        lEsum += std::log(dist_results(iter));
-        lEsum2 += pow(std::log(dist_results(iter)), 2);
-        meanEps = lEsum / (iter + 1);
-        meanEps2 = lEsum2 / (iter + 1);
-        eps = exp(std::log(eps0) / pow(iter + 1, 2)) *
-              exp(meanEps - 2.33 * (meanEps2 - meanEps * meanEps));
-        if (dist_results(iter) < eps)
-        {
-            num_accepted += 1;
+        double d = std::get<1>(dist_out);
+        if ( (adapt_only_burn && (n_accept < nburn)) || (!adapt_only_burn) )
+            update_eps(d, n_accept);
+
+        if (d < eps) {
+            // std::cout << "ACCEPT!" << std::endl;
+            n_accept += 1;
+
             part = temp_part;
             saveCurrParam();
+
+            dist_results(n_accept) = d;
             real_data_part = part(std::get<0>(dist_out));
-            part_results.row(iter) = real_data_part.t();
-        } else {
-            part_results.row(iter) = real_data_part.t();
+            part_results.row(n_accept) = real_data_part.t();
+
+            // std::cout << "Done" << std::endl;
         }
 
         if (log)
             param_log[iter] = param;
-        
 
         if (iter % 1000 == 0) {
             std::cout << "Iter: " << iter << " / " << nrep << "; "
-                      << "accepted: " << 1.0 * num_accepted / iter << "%" 
+                      << "accepted: " << n_accept 
+                      << ", eps: " << eps << ", dist: " <<  d 
                       << std::endl;
         }
+
+        if (iter > 5000000)
+            break;
     }
 
-    int end_s = clock();
+    // for (int iter = 0; iter < nrep; iter++) {
+    //     step();
+    //     std::tuple<arma::uvec, double> dist_out = d->compute(data, data_synt);
+    //     dist_results(iter) = std::get<1>(dist_out);
+    //     lEsum += std::log(dist_results(iter));
+    //     lEsum2 += pow(std::log(dist_results(iter)), 2);
+    //     meanEps = lEsum / (iter + 1);
+    //     meanEps2 = lEsum2 / (iter + 1);
+    //     eps = exp(std::log(eps0) / pow(iter + 1, 2)) *
+    //           exp(meanEps - 2.33 * (meanEps2 - meanEps * meanEps));
+    //     if (dist_results(iter) < eps)
+    //     {
+    //         num_accepted += 1;
+    //         part = temp_part;
+    //         saveCurrParam();
+    //         real_data_part = part(std::get<0>(dist_out));
+    //         part_results.row(iter) = real_data_part.t();
+    //     } else {
+    //         part_results.row(iter) = real_data_part.t();
+    //     }
 
+    //     if (log)
+    //         param_log[iter] = param;
+        
+
+    //     if (iter % 10 == 0) {
+    //         std::cout << "Iter: " << iter << " / " << nrep << "; "
+    //                   << "accepted: " << 1.0 * num_accepted / iter << "%" 
+    //                   << std::endl;
+    //     }
+    // }
+
+    int end_s = clock();
     return double(end_s - start_s) / CLOCKS_PER_SEC;
+}
+
+template <typename data_t, typename param_t, class Kernel>
+void AbcPy<data_t, param_t, Kernel>::update_eps(double dist, int iter) {
+    // TODO -> this updates without the betas
+    eps_star *= exp(pow(iter, (-2 / 3)) * (0.05 - 1.0 * (dist < eps_star)));
+    eps = eps_star;
 }
 
 #endif

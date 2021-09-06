@@ -38,15 +38,28 @@ public:
 };
 
 // NB!! Assumes atoms_x already sorted
-// class SortingDistance1d: public Distance<double> {
-// protected:
-//     double p = 1.0;
+class SortingDistance1d: public Distance<double> {
+protected:
+    double p = 1.0;
 
-// public:
-//     std::tuple<arma::uvec, double> compute(
-//         const std::vector<double> &real_data,
-//         const std::vector<double> &synth_data);
-// };
+public:
+    std::tuple<arma::uvec, double> compute(
+        const std::vector<double> &real_data,
+        const std::vector<double> &synth_data) {
+        
+        std::vector<size_t> perm(synth_data.size());
+        std::iota(perm.begin(), perm.end(), 0);
+        std::stable_sort(perm.begin(), perm.end(),
+            [&synth_data](size_t i1, size_t i2) {return synth_data[i1] < synth_data[i2];});
+
+        double cost = 0.0;
+        for (size_t i = 0; i < perm.size(); i++) {
+            cost += std::abs(real_data[i] - synth_data[perm[i]]);
+        }
+
+        return std::make_tuple(arma::conv_to<arma::uvec>::from(perm), cost);
+    }
+};
 
 
 template <typename data_t>
@@ -98,6 +111,7 @@ std::tuple<arma::uvec, double> UniformWasserstein<data_t>::compute(
     const std::vector<data_t> &real_data,
     const std::vector<data_t> &synth_data)
 {
+    // std::cout << "UniformWasserstin::compute()" << std::endl;
     int n1 = real_data.size();
     int n2 = synth_data.size();
     arma::vec weights_x = arma::ones<arma::vec>(n1) / n1;
@@ -111,6 +125,8 @@ std::tuple<arma::uvec, double> UniformWasserstein<data_t>::compute(
 
     // Compute pairwise distance (cost) matrix
     arma::mat cost_mat = pairwise_dist(real_data, synth_data);
+
+    // std::cout << "cost_mat \n" << cost_mat << std::endl;
 
     status = EMD_wrap(
         n1, n1, weights_x.memptr(), weights_s.memptr(), cost_mat.memptr(),

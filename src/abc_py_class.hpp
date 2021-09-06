@@ -34,13 +34,14 @@ class AbcPy {
      double theta, sigma;
      int n_data;
      double eps0;
+     double eps_star;
+     double eps;
 
      int n_unique;
      arma::uvec sort_indices;
      arma::vec t_diff;
      double lEsum = 0;
      double lEsum2 = 0;
-     double eps;
      double meanEps, meanEps2;
 
      bool log=false;
@@ -53,7 +54,7 @@ class AbcPy {
 
      AbcPy(std::vector<data_t> data, std::vector<param_t> inits,
            double theta, double sigma,
-           double eps0, std::string distance, Kernel kernel,
+           double eps0, double eps_star, std::string distance, Kernel kernel,
            int max_iter = 100, double entropic_eps = 0.1, double threshold = 1e-4);
     
      void set_log() {log = true;}
@@ -68,13 +69,15 @@ class AbcPy {
 
      void step();
 
-     double run(int nrep);
+     double run(int nrep, int nburn, bool adapt_only_burn = true);
 
      arma::vec get_dists() const { return dist_results; }
 
      arma::imat get_parts() const { return part_results; }
 
      std::vector<std::vector<param_t>> get_params_log() const { return param_log; }
+
+     void update_eps(double dist, int iter);
 };
 
 #include "abc_class_imp.hpp"
@@ -82,6 +85,8 @@ class AbcPy {
 using UnivAbcPy = AbcPy<double, arma::vec, UnivGaussianKernel>;
 
 using MultiAbcPy = AbcPy<arma::vec, mvnorm_param, MultiGaussianKernel>;
+
+using MultiGnKAbcPy = AbcPy<arma::vec, gandk_param, MultiGandKKernel>;
 
 using TimeSeriesAbcPy = AbcPy<TimeSeries, arma::vec, TimeSeriesKernel>;
 

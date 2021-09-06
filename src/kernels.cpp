@@ -19,12 +19,18 @@ arma::vec UnivGaussianKernel::sample_prior()
 std::vector<double> UnivGaussianKernel::generate_dataset(
     arma::ivec temp_part, std::vector<arma::vec> tparam)
 {
+    // std::cout << "UnivGaussianKernel::generate_dataset" << std::endl;
+    // std::cout << "n: " << temp_part.n_elem << std::endl;
+    // std::cout << "tparam: "; 
+    for (size_t i = 0; i < tparam.size(); i++) std::cout << tparam[i] << " ";
+    std::cout << std::endl;
     std::vector<double> data_synt(temp_part.n_elem);
     for (arma::uword j = 0; j < temp_part.n_elem; j++)
     {
         data_synt[j] = arma::randn() * sqrt(tparam[temp_part(j)](1)) + \
                        tparam[temp_part(j)](0);
     }
+    // std::cout << "UnivGaussianKernel::generate_dataset - DONE" << std::endl;
 
     return data_synt;
 }
@@ -77,6 +83,111 @@ std::vector<mvnorm_param> MultiGaussianKernel::make_default_init()
 
     return std::vector<mvnorm_param>{param};
 }
+
+//
+// G and K
+//
+MultiGandKKernel::MultiGandKKernel(double rho): rho(rho) {
+  int dim = 2;
+
+  mean_a = arma::ones(dim) * 0.0;
+  var_a = arma::ones(dim) * 25.0;
+  shape_b = arma::ones(dim) * 4.0;
+  rate_b = arma::ones(dim) * 4.0;
+  mean_g = arma::ones(dim) * 0.0;
+  var_g = arma::ones(dim) * 5.0;
+  shape_k = arma::ones(dim) * 10.0;
+  rate_k = arma::ones(dim) * 4.0;
+
+  arma::mat cov = arma::eye(2, 2);
+  cov(0, 1) = rho;
+  cov(1, 0) = rho; 
+
+  cov_chol = arma::chol(cov);
+}
+
+MultiGandKKernel::MultiGandKKernel(
+     double rho, arma::vec mean_a, arma::vec var_a,  arma::vec shape_b, arma::vec rate_b, 
+     arma::vec mean_g, arma::vec var_g, arma::vec shape_k, arma::vec rate_k): 
+        rho(rho), mean_a(mean_a), var_a(var_a), shape_b(shape_b), rate_b(rate_b), mean_g(mean_g), var_g(var_g),
+        shape_k(shape_k), rate_k(rate_k) {
+    
+    arma::mat cov = arma::eye(2, 2);
+    cov(0, 1) = rho;
+    cov(1, 0) = rho; 
+
+    cov_chol = arma::chol(cov);
+}
+
+gandk_param  MultiGandKKernel::sample_prior() {
+    gandk_param out;
+    // std::cout << "sample_prior()" << std::endl;
+    out.a = arma::randn(2) % arma::sqrt(var_a) + mean_a;
+    out.g = arma::randn(2) % arma::sqrt(var_g) + mean_g;
+
+    out.b.resize(2);
+    out.k.resize(2);
+    for (int i=0; i < 2; i++) {
+        out.b(i) = 1.0 / arma::randg(arma::distr_param(shape_b(i), 1.0 / rate_b(i)));
+        out.k(i) = 1.0 / arma::randg(arma::distr_param(shape_k(i), 1.0 / rate_k(i)));
+    }
+
+    // out.g = arma::vec({0, 0});
+    // out.b = arma::vec({1, 1});
+    // out.k = arma::vec({1, 1});
+    // std::cout << "sample_prior() DONE" << std::endl;
+
+    return out;
+}
+
+std::vector<arma::vec> MultiGandKKernel::generate_dataset(
+        arma::ivec temp_part, std::vector<gandk_param> tparam) {
+    std::vector<arma::vec> data_synt(temp_part.n_elem);
+    // std::cout << temp_part.t() << std::endl;
+    // std::cout << "maxk: " << temp_part.max() << std::endl;
+    // std::cout << "tparam: " << tparam.size() << std::endl;
+    for (arma::uword j = 0; j < temp_part.n_elem; j++)
+    {
+        gandk_param currparam = tparam[temp_part(j)];
+        data_synt[j] = rand_from_param(currparam);
+    }
+    // std::cout << "generate_datased -- DONE" << std::endl;
+    return data_synt;
+}
+
+arma::vec  MultiGandKKernel::rand_from_param(gandk_param param) {
+    // std::cout << "rand_from_param" << std::endl;
+
+    arma::vec norm = rnorm_chol(arma::zeros(2), cov_chol);
+    arma::vec out(2);
+    for (arma::uword i=0; i < 2; i++) {
+        out(i) = param.a(i) + param.b(i) * (
+            1 + 0.8 * (1 - std::exp(-param.g(i) * norm(i))) / 
+                      (1 + std::exp(-param.g(i) * norm(i)))) * (
+                      std::pow(1.0 + norm(i) * norm(i), param.k(i))) * norm(i);
+    }
+
+    if (arma::any(arma::abs(out) > 1e5)) {
+        std::cout << "a: " << param.a.t() << ", b: " << param.b.t() 
+                  << ", c: " << param.g.t() << ", k: " << param.k.t() << std::endl;
+    }
+
+    // std::cout << out.t() << std::endl;
+
+    // std::cout << "rand_from_param DONE" << std::endl;
+    return out;
+}
+
+std::vector<gandk_param> MultiGandKKernel::make_default_init() {
+    gandk_param param;
+    param.a = mean_a;
+    param.b = shape_b / rate_b;
+    param.g = mean_g;
+    param.k = shape_k / rate_k;
+
+    return std::vector<gandk_param>{param};
+}
+
 
 //
 // TIME SERIES

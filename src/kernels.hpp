@@ -1,6 +1,7 @@
 #ifndef KERNELS_HPP
 #define KERNELS_HPP
 
+#include <cmath>
 #include <random>
 #include "distributions.hpp"
 #include "utils.hpp"
@@ -8,6 +9,13 @@
 #include "time_series.hpp"
 
 using mvnorm_param = std::tuple<arma::vec, arma::mat>;
+
+struct gandk_param {
+    arma::vec a;
+    arma::vec b;
+    arma::vec g;
+    arma::vec k;
+};
 
 class UnivGaussianKernel
 {
@@ -48,6 +56,41 @@ public:
         arma::ivec temp_part, std::vector<mvnorm_param> tparam);
 
     std::vector<mvnorm_param> make_default_init();
+};
+
+class MultiGandKKernel {
+protected:
+    arma::vec mean_a;
+    arma::vec var_a;
+    arma::vec shape_b;
+    arma::vec rate_b;
+    arma::vec mean_g;
+    arma::vec var_g;
+    arma::vec shape_k;
+    arma::vec rate_k;
+
+    double rho;
+    arma::mat cov_chol;
+
+public:
+  MultiGandKKernel() {}
+  ~MultiGandKKernel() {}
+
+  MultiGandKKernel(double rho);
+
+  MultiGandKKernel(double rho, arma::vec mean_a, arma::vec var_a,  arma::vec shape_b, arma::vec rate_b, 
+                   arma::vec mean_g, arma::vec var_g, arma::vec shape_k, arma::vec rate_k);
+
+
+  gandk_param sample_prior();
+
+  std::vector<arma::vec> generate_dataset(
+      arma::ivec temp_part, std::vector<gandk_param>);
+
+  std::vector<gandk_param> make_default_init();
+
+  arma::vec rand_from_param(gandk_param param);
+
 };
 
 
