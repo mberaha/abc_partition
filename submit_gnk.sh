@@ -16,7 +16,7 @@ cd ${PBS_O_WORKDIR}
 
 export mkPrefix=/u/sw
 source $mkPrefix/etc/profile
-module load gcc-glibc/11
+module load gcc-glibc/9
 module load cgal
 module load boost
 module load pybind11

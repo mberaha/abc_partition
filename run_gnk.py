@@ -6,9 +6,9 @@ import abcpp as abc
 from joblib import Parallel, delayed
 
 
-def run_one():
-    clus1 = np.zeros((50, 2))
-    clus2 = np.zeros((50, 2))
+def run_one(ndata):
+    clus1 = np.zeros((ndata, 2))
+    clus2 = np.zeros((ndata, 2))
 
     for i in range(clus1.shape[0]):
         clus1[i, :] = abc.rand_gandk(
@@ -32,7 +32,14 @@ def run_one():
 if __name__ == "__main__":
     
     fd = delayed(run_one)
-    out = Parallel(n_jobs=19, prefer="threads")([fd() for _ in range(50)])
+    out100 = Parallel(n_jobs=19, prefer="threads")([fd(50) for _ in range(50)])
+    with open("gnk_results100.pickle", "wb") as fp:
+        pickle.dump(out100, fp)
 
-    with open("gnk_results.pickle", "wb") as fp:
-        pickle.dump(out, fp)
+    out250 = Parallel(n_jobs=19, prefer="threads")([fd(125) for _ in range(50)])
+    with open("gnk_results250.pickle", "wb") as fp:
+        pickle.dump(out250, fp)
+
+    out1000 = Parallel(n_jobs=19, prefer="threads")([fd(5000) for _ in range(50)])
+    with open("gnk_results1000.pickle", "wb") as fp:
+        pickle.dump(out1000, fp)
