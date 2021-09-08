@@ -22,9 +22,10 @@ module load boost
 module load pybind11
 
 export CGAL_DIR=${mkCgalPrefix}
-export PYTHON="/u/sw/toolchains/gcc-glibc/11/base/bin/python3"
+export PYTHON3=python3
 export BOOST_DIR=${mkBoostPrefix}
 export ARMADILLO_DIR="/u/archive/dott/beraha/usr/armadillo-10.6.2"
+export PATH=$PATH:/u/archive/dott/beraha/usr/lib64 
 
 make generate_pybind -j10
 

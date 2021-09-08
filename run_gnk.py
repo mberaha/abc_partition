@@ -1,6 +1,5 @@
 import pickle
 import numpy as np
-import matplotlib.pyplot as plt
 import abcpp as abc
 
 from joblib import Parallel, delayed
@@ -17,13 +16,13 @@ def run_one(ndata):
             0.5, [3, 3], [0.5, 0.5], [0.4, 0.4], [0.5, 0.5])
         
     out_wass = abc.run_gandk(
-        np.vstack([clus1, clus2]), 0.5, 20000, 10000, 1.0, 0.2, 100, 100, 2, 
+        np.vstack([clus1, clus2]), 0.5, 200, 100, 1.0, 0.2, 100, 100, 2, 
         "wasserstein", [], False)
     out_sink = abc.run_gandk(
-        np.vstack([clus1, clus2]), 0.5, 20000, 10000, 1.0, 0.2, 100, 100, 2, 
+        np.vstack([clus1, clus2]), 0.5, 200, 100, 1.0, 0.2, 100, 100, 2, 
         "sinkhorn", [], False)
     out_green = abc.run_gandk(
-        np.vstack([clus1, clus2]), 0.5, 20000, 10000, 1.0, 0.2, 100, 100, 2, 
+        np.vstack([clus1, clus2]), 0.5, 200, 100, 1.0, 0.2, 100, 100, 2, 
         "greenkhorn", [], False)
 
     return out_wass, out_sink, out_green
