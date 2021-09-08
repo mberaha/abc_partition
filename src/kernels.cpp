@@ -91,13 +91,13 @@ MultiGandKKernel::MultiGandKKernel(double rho): rho(rho) {
   int dim = 2;
 
   mean_a = arma::ones(dim) * 0.0;
-  var_a = arma::ones(dim) * 25.0;
+  var_a = arma::ones(dim) * 10.0;
   shape_b = arma::ones(dim) * 4.0;
   rate_b = arma::ones(dim) * 4.0;
   mean_g = arma::ones(dim) * 0.0;
   var_g = arma::ones(dim) * 5.0;
   shape_k = arma::ones(dim) * 10.0;
-  rate_k = arma::ones(dim) * 4.0;
+  rate_k = arma::ones(dim) * 2.0;
 
   arma::mat cov = arma::eye(2, 2);
   cov(0, 1) = rho;
@@ -135,7 +135,6 @@ gandk_param  MultiGandKKernel::sample_prior() {
     // out.g = arma::vec({0, 0});
     // out.b = arma::vec({1, 1});
     // out.k = arma::vec({1, 1});
-    // std::cout << "sample_prior() DONE" << std::endl;
 
     return out;
 }
@@ -162,8 +161,8 @@ arma::vec  MultiGandKKernel::rand_from_param(gandk_param param) {
     arma::vec out(2);
     for (arma::uword i=0; i < 2; i++) {
         out(i) = param.a(i) + param.b(i) * (
-            1 + 0.8 * (1 - std::exp(-param.g(i) * norm(i))) / 
-                      (1 + std::exp(-param.g(i) * norm(i)))) * (
+            1 + 0.8 * (1 - 0.3 * std::exp(-param.g(i) * norm(i))) / 
+                      (1 + 0.3* std::exp(-param.g(i) * norm(i)))) * (
                       std::pow(1.0 + norm(i) * norm(i), param.k(i))) * norm(i);
     }
 
@@ -181,9 +180,9 @@ arma::vec  MultiGandKKernel::rand_from_param(gandk_param param) {
 std::vector<gandk_param> MultiGandKKernel::make_default_init() {
     gandk_param param;
     param.a = mean_a;
-    param.b = shape_b / rate_b;
+    param.b = rate_b / shape_b;
     param.g = mean_g;
-    param.k = shape_k / rate_k;
+    param.k = rate_k / shape_k;
 
     return std::vector<gandk_param>{param};
 }

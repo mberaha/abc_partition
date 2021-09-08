@@ -171,14 +171,14 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
         if (log)
             param_log[iter] = param;
 
-        if (iter % 10000 == 0) {
+        if (iter % 100000 == 0) {
             std::cout << "Iter: " << iter << " / " << nrep << "; "
                       << "accepted: " << n_accept 
                       << ", eps: " << eps << ", dist: " <<  d 
                       << std::endl;
         }
 
-        if (iter > 5000000)
+        if (iter > 5000)
             break;
     }
 

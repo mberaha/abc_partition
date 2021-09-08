@@ -153,7 +153,9 @@ std::tuple<arma::uvec, double> UniformSinkhorn<data_t>::compute(
         init(real_data, synth_data);
 
     cost_mat = pairwise_dist(real_data, synth_data);
-
+    // std::cout << "sinkhorn cost mat " << arma::abs(cost_mat).max() << std::endl;
+    cost_mat.transform([](double val) { 
+        return (val > 50.0) ? 50.0 : val; } );
     dist = -10;
     call();
 
