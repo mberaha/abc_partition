@@ -2,30 +2,25 @@ ROOT_DIR := .
 SRC_DIR := $(ROOT_DIR)/src
 SPIKES_DIR := $(SRC_DIR)/spikes
 OT_DIR := $(SRC_DIR)/ot
-HOMEBREW_PREFIX := /usr/local/Homebrew
-CGAL_DIR := ${HOMEBREW_PREFIX}/Cellar/cgal/5.3
-PYTHON3 := ${HOMEBREW_PREFIX}/Cellar/python@3.9/3.9.6/bin/python3
 
-
-CXX = g++
+CXX = clang++
 CFLAGS = \
-	-std=c++14 \
+	-std=c++1y \
 	-stdlib=libc++ \
 	-MMD \
 	-I${HOMEBREW_PREFIX}/include \
-    -I${HOMEBREW_PREFIX}/Cellar/armadillo/10.6.2/include \
-	-I${HOMEBREW_PREFIX}/Cellar/boost/1.76.0/include \
+    -I${ARMADILLO_DIR}/include \
+	-I${BOOST_DIR}/include \
 	-I$(OT_DIR) \
 	-I$(CGAL_DIR)/include \
 	-I$(ROOT_DIR)/lib/stats/include \
 	-I$(ROOT_DIR)/lib/gcem/include \
-	-I${HOMEBREW_PREFIX}/Cellar/python@3.9/3.9.5/Frameworks/Python.framework/Headers \
+	`${PYTHON3}-config --includes` \
 	-fPIC -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON \
-	-O3  -ftree-vectorize -funroll-loops
+	-O3 -ftree-vectorize -funroll-loops
 
-LDLIBS = -lstdc++  -larmadillo -lblas -llapack -L${HOMEBREW_PREFIX}/Cellar/armadillo/10.6.2/lib -L${HOMEBREW_PREFIX}/lib
-LDFLAGS = -std=c++14 -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG \
-		  -DARMA_USE_OPENMP
+LDLIBS = -lstdc++ -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib -L${HOMEBREW_PREFIX}/lib `${PYTHON3}-config --libs`
+LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG `${PYTHON3}-config --ldflags`
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
 OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/abc_py_class.cpp, $(OUR_SRCS_T))
@@ -54,11 +49,9 @@ generate_lib: $(OBJS)
 
 generate_pybind: $(OBJS)
 	$(CXX) -shared $(CFLAGS) -I$(SRC_DIR)/lib/carma/include/ \
-		`${PYTHON3} -m pybind11 --includes` \
-		-lpython3.9 \
-		`${PYTHON3}-config --cflags` `${PYTHON3}-config --libs` `${PYTHON3}-config --ldflags`\
+		 `${PYTHON3} -m pybind11 --includes` \
 		python_exports.cpp -o abcpp`${PYTHON3}-config --extension-suffix` \
-		$(OBJS) $(LDLIBS)
+		$(OBJS) $(LDLIBS) $(LDFLAGS)
 
 
 $(SPIKES_EXECS): %.out: %.o $(OBJS)

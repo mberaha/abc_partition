@@ -49,6 +49,37 @@ void sinkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
     return;
 }
 
+// void stable_sinkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
+//               const arma::mat &cost, double eps,
+//               double threshold, int max_iter, int norm_p, arma::mat* transport,
+//               double* dist) {
+    
+//     arma::vec ones_in = arma::ones(weights_in.n_elem);
+//     arma::vec ones_out = arma::ones(weights_out.n_elem);
+
+//     arma::vec loga = weights_in.log();
+//     arma::vec logb = weights_out.log();
+    
+
+//     arma::vec alpha = eps * weights_in.log() + softmin(
+//         C - weights_in * ones_in.t() - ones_out * weights_out.t());
+    
+
+// }
+
+// arma::vec softmin(arma::mat C, double eps) {
+//     arma::vec out = arma::zeros(C.n_rows);
+//     for (int i=0; i < C.n_rows; i++) {
+//         out(i) = - eps * log_sum_exp(C.row(i) / eps);
+//     }
+//     return out;
+// }
+
+// double log_sum_exp(arma::vec x) {
+//     double xmax = x.max();
+//     return xmax + arma::log(arma::exp(x - xmax).sum());
+// }
+
 void greenkhorn(const arma::vec &weights_in, const arma::vec &weights_out,
                 const arma::mat &cost, double eps,
                 double threshold, int max_iter, int norm_p, arma::mat* transport,

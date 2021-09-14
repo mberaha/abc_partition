@@ -1,3 +1,4 @@
+#include <pybind11/iostream.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <pybind11/numpy.h>
@@ -239,6 +240,8 @@ std::vector<double> simulate_ts(
 PYBIND11_MODULE(abcpp, m)
 {
     m.doc() = "aaa"; // optional module docstring
+
+    py::add_ostream_redirect(m, "ostream_redirect");
 
     m.def("run_univariate", &run_univariate,
           "...");
