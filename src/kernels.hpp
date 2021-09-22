@@ -6,7 +6,6 @@
 #include "distributions.hpp"
 #include "utils.hpp"
 #include "stats.hpp"
-#include "time_series.hpp"
 
 using mvnorm_param = std::tuple<arma::vec, arma::mat>;
 
@@ -93,6 +92,8 @@ public:
 
 };
 
+#ifdef USE_CGAL
+#include "time_series.hpp"
 
 class TimeSeriesKernel {
 protected:
@@ -125,6 +126,8 @@ public:
 
     std::vector<arma::vec> make_default_init();
 };
+
+#endif
 
 
 #ifdef USE_R

@@ -192,6 +192,8 @@ std::vector<gandk_param> MultiGandKKernel::make_default_init() {
 // TIME SERIES
 //
 
+#ifdef USE_CGAL
+
 TimeSeriesKernel::TimeSeriesKernel(
     double mu_mean, double mu_sd, double beta_mean, double beta_sd, 
     double xi_rate, double omega_sq_rate, double lambda_rate, int num_steps) :
@@ -276,6 +278,8 @@ std::vector<arma::vec> TimeSeriesKernel::make_default_init()
     param(4) = 1.0 / lambda_rate;
     return std::vector<arma::vec>{param};
 }
+
+#endif
 
 //
 // GRAPH
