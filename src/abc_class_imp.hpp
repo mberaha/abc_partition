@@ -27,7 +27,7 @@ AbcPy<data_t, param_t, Kernel>::AbcPy(
     part = arma::randi(data.size(), arma::distr_param(0, inits.size() - 1));
     // part = arma::ivec(data.size(), arma::fill::zeros);
     // part.tail(int(data.size() / 2)).fill(1);
-    // std::cout << "part: " << part.t() << std::endl;
+    std::cout << "part: " << part.t() << std::endl;
     temp_part = part;
     // std::cout << "generating dataset" << std::endl;
     data_synt = kernel.generate_dataset(temp_part, tparam);
@@ -151,8 +151,14 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
         step();
         std::tuple<arma::uvec, double> dist_out = d->compute(data, data_synt);
         double d = std::get<1>(dist_out);
-        if ( (adapt_only_burn && (n_accept < nburn)) || (!adapt_only_burn) )
-            update_eps(d, n_accept);
+
+        if (iter % 1000 == 0) {
+            std::cout << "Iter: " << iter << " / " << nrep << "; "
+                      << "accepted: " << n_accept 
+                      << ", eps: " << eps << ", eps_star: " << eps_star 
+                      << ", dist: " <<  d << std::endl;
+        }
+
 
         if (d < eps) {
             // std::cout << "ACCEPT!" << std::endl;
@@ -168,17 +174,13 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
             // std::cout << "Done" << std::endl;
         }
 
+        if ( (adapt_only_burn && (n_accept < nburn)) || (!adapt_only_burn) )
+            update_eps(d, n_accept);
+
         if (log)
             param_log[iter] = param;
 
-        if (iter % 100000 == 0) {
-            std::cout << "Iter: " << iter << " / " << nrep << "; "
-                      << "accepted: " << n_accept 
-                      << ", eps: " << eps << ", dist: " <<  d 
-                      << std::endl;
-        }
-
-        if (iter > 5000)
+        if (iter > 5000000)
             break;
     }
 
@@ -221,7 +223,9 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
 template <typename data_t, typename param_t, class Kernel>
 void AbcPy<data_t, param_t, Kernel>::update_eps(double dist, int iter) {
     // TODO -> this updates without the betas
-    eps_star *= exp(pow(iter, (-2 / 3)) * (0.05 - 1.0 * (dist < eps_star)));
+    double discount = (0.05 - 1.0 * (dist < eps_star));
+    double decay = pow(1.0 * iter, (-2.0 / 3.0));
+    eps_star *=  exp(decay * discount);
     eps = eps_star;
 }
 

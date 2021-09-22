@@ -143,7 +143,8 @@ py_return_t_multi run_gandk(
     double time = abc_mcmc.run(nrep, nburn);
 
     std::vector<std::vector<gandk_param>> params_log;
-    std::vector<std::vector<std::tuple<pyarr_d, pyarr_d>>> params_log_py(params_log.size());
+    std::vector<std::vector<std::tuple<pyarr_d, pyarr_d>>> params_log_py(
+        params_log.size());
     
     // for (int i = 0; i < params_log.size(); i++) {
     //     std::vector<std::tuple<pyarr_d, pyarr_d>> curr(params_log[i].size());
@@ -163,13 +164,23 @@ py_return_t_multi run_gandk(
 
 }
 
+// double mu_mean, double mu_sd, double beta_mean,
+//     double beta_sd, double xi_rate, double omega_sq_rate, double lambda_rate,
+
 py_return_t_ts run_timeseries(
-    pyarr_d data, double mu_mean, double mu_sd, double beta_mean,
-    double beta_sd, double xi_rate, double omega_sq_rate, double lambda_rate,
-    int nrep, double theta, double sigma, double eps, int p = 1,
-    std::string dist = "sorting", std::vector<std::vector<double>> inits_ = {},
-    bool log = false)
+    pyarr_d data, int nrep, int nburn, double theta, double sigma, 
+    double eps0, double eps_star, int p,
+    std::string dist, 
+    pyarr_d inits_, 
+    bool log)
 {
+    double mu_mean = 0.0;
+    double mu_sd = 10.0;
+    double beta_mean = 0.0;
+    double beta_sd = 10.0;
+    double xi_rate = 2.0;
+    double omega_sq_rate = 2.0;
+    double lambda_rate = 2.0;
     arma::mat datamat = carma::arr_to_mat<double>(data);
     int nsteps = datamat.n_cols;
 
@@ -181,21 +192,27 @@ py_return_t_ts run_timeseries(
     if (inits_.size() == 0)
         inits = kernel.make_default_init();
     else {
-        for (int i=0; i < inits_.size(); i++)
-            inits.push_back(arma::conv_to<arma::vec>::from(inits_[i]));
+        inits = to_vectors(carma::arr_to_mat<double>(inits_));
     }
+
+    for (int i=0; i < inits.size(); i++) {
+        std::cout << inits[i].t();
+    }
+
+    // inits = kernel.make_default_init();
+    // bool log = false;
 
     std::vector<TimeSeries> datavec(datamat.n_rows);
     for (int i = 0; i < datamat.n_rows; i++)
         datavec[i] = TimeSeries(datamat.row(i).t());
 
     TimeSeriesAbcPy abc_mcmc(datavec, inits, theta, sigma,
-                             eps, eps, dist, kernel);
+                             eps0, eps_star, dist, kernel);
 
     if (log)
         abc_mcmc.set_log();
 
-    double time = abc_mcmc.run(nrep, int(nrep / 2));
+    double time = abc_mcmc.run(nrep, int(nrep / 2), false);
 
     std::vector<std::vector<arma::vec>> params_log = abc_mcmc.get_params_log();
     std::vector<std::vector<pyarr_d>> params_log_py(params_log.size());
