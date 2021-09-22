@@ -15,12 +15,13 @@ CFLAGS = \
 	-I$(CGAL_DIR)/include \
 	-I$(ROOT_DIR)/lib/stats/include \
 	-I$(ROOT_DIR)/lib/gcem/include \
-	`${PYTHON3}-config --includes` \
 	-fPIC -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON \
-	-O3 -ftree-vectorize -funroll-loops
+	-O3 -ftree-vectorize -funroll-loops \
+	-Wno-reorder -Wno-sign-compare
 
 LDLIBS = -lstdc++ -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib -L${HOMEBREW_PREFIX}/lib `${PYTHON3}-config --libs`
 LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG `${PYTHON3}-config --ldflags`
+
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
 OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/abc_py_class.cpp, $(OUR_SRCS_T))
@@ -49,9 +50,11 @@ generate_lib: $(OBJS)
 
 generate_pybind: $(OBJS)
 	$(CXX) -shared $(CFLAGS) -I$(SRC_DIR)/lib/carma/include/ \
-		 `${PYTHON3} -m pybind11 --includes` \
+		`${PYTHON3} -m pybind11 --includes` \
+		-lpython3.9 \
+		`${PYTHON3}-config --cflags` `${PYTHON3}-config --libs` `${PYTHON3}-config --ldflags`\
 		python_exports.cpp -o abcpp`${PYTHON3}-config --extension-suffix` \
-		$(OBJS) $(LDLIBS) $(LDFLAGS)
+		$(OBJS) $(LDLIBS) -Wno-reorder -Wno-sign-compare
 
 
 $(SPIKES_EXECS): %.out: %.o $(OBJS)
