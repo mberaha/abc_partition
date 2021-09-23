@@ -39,6 +39,6 @@ if __name__ == "__main__":
     with open("gnk_results250.pickle", "wb") as fp:
         pickle.dump(out250, fp)
 
-    out1000 = Parallel(n_jobs=19)([fd(5000) for _ in range(50)])
+    out1000 = Parallel(n_jobs=19)([fd(500) for _ in range(50)])
     with open("gnk_results1000.pickle", "wb") as fp:
         pickle.dump(out1000, fp)
