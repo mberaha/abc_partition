@@ -63,6 +63,9 @@ generate_pybind: $(OBJS)
 		python_exports.cpp -o abcpp`${PYTHON3}-config --extension-suffix` \
 		$(OBJS) $(LDLIBS)
 
+run_gnk: run_gnk.o $(OBJS)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o run_gnk.out $(OBJS) $< $(LDLIBS)
+	
 
 $(SPIKES_EXECS): %.out: %.o $(OBJS)
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $< $(LDLIBS)
