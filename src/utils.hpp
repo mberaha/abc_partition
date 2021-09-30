@@ -15,5 +15,11 @@ arma::mat pairwise_dist(const std::vector<double> &x,
 arma::mat pairwise_dist(const std::vector<arma::vec> &x,
                         const std::vector<arma::vec> &y);
 
+void pairwise_dist_rowmajor(const std::vector<double> &x,
+                            const std::vector<double> &y, double* out);
+
+void pairwise_dist_rowmajor(const std::vector<arma::vec> &x,
+                            const std::vector<arma::vec> &y, double* out);
+
 
 #endif 

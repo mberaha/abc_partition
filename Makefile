@@ -3,11 +3,12 @@ SRC_DIR := $(ROOT_DIR)/src
 SPIKES_DIR := $(SRC_DIR)/spikes
 OT_DIR := $(SRC_DIR)/ot
 
+UNAME_S := $(shell uname -s)
+
 CXX = g++
 CFLAGS = \
 	-std=c++1y \
 	-MMD \
-	-I${HOMEBREW_PREFIX}/include \
     -I${ARMADILLO_DIR}/include \
 	-I${BOOST_DIR}/include \
 	-I$(OT_DIR) \
@@ -15,10 +16,19 @@ CFLAGS = \
 	-I$(ROOT_DIR)/lib/stats/include \
 	-I$(ROOT_DIR)/lib/gcem/include \
 	-fPIC -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON \
-	-O3 -ftree-vectorize -funroll-loops
+	-O3 -ftree-vectorize -funroll-loops \
+	-Wno-reorder -Wno-sign-compare 
 
-LDLIBS = -lstdc++  -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib -L${HOMEBREW_PREFIX}/lib
-LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG -DUSE_CGAL
+LDLIBS = -lstdc++ -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib `${PYTHON3}-config --libs`
+LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG -DUSE_CGAL `${PYTHON3}-config --ldflags`
+
+ifeq (${UNAME_S},Darwin)
+	CXX = clang++
+	CFLAGS += -I${HOMEBREW_PREFIX}/include  -DUSE_CGAL
+	LDLIBS += -L${HOMEBREW_PREFIX}/lib 
+else 
+	CFLAGS += -fopenmp
+endif
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
 OUR_SRCS_TT = $(filter-out $(SRC_DIR)/RcppExports.cpp $(SRC_DIR)/graph.cpp $(SRC_DIR)/abc_py_class.cpp, $(OUR_SRCS_T))
@@ -39,6 +49,8 @@ info:
 	@echo " SPIKES_DIR = $(SPIKES_DIR)"
 	@echo " SOURCES = $(SRCS)"
 	@echo " OT_SRCS = $(OT_SRCS)"
+	@echo "uname -s: $(UNAME_S)"
+
 
 all: $(SPIKES_EXECS) generate_pybind
 

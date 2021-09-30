@@ -120,13 +120,12 @@ std::tuple<arma::uvec, double> UniformWasserstein<data_t>::compute(
     arma::vec beta = arma::zeros<arma::vec>(n2);
     arma::mat t_mat(n1, n2);
     int status = 0;
-
-    double cost;
+    double cost = -10;
 
     // Compute pairwise distance (cost) matrix
     arma::mat cost_mat = pairwise_dist(real_data, synth_data);
-
-    // std::cout << "cost_mat \n" << cost_mat << std::endl;
+    cost_mat.transform([](double val) { 
+        return (val > 50.0) ? 50.0 : val; } );
 
     status = EMD_wrap(
         n1, n1, weights_x.memptr(), weights_s.memptr(), cost_mat.memptr(),
@@ -138,7 +137,6 @@ std::tuple<arma::uvec, double> UniformWasserstein<data_t>::compute(
         cost = std::pow(cost, 1.0 / p);
 
     arma::umat perm_mat = arma::conv_to<arma::umat>::from(t_mat * n1);
-
     arma::uvec perm =  perm_mat * arma::regspace<arma::uvec>(
             0, real_data.size() - 1);
     return std::make_tuple(perm, cost);
@@ -158,6 +156,9 @@ std::tuple<arma::uvec, double> UniformSinkhorn<data_t>::compute(
         return (val > 50.0) ? 50.0 : val; } );
     dist = -10;
     call();
+
+    transport.transform([](double val) { 
+        return (val < 1e-6) ? 0.0 : val; } );
 
     #pragma omp parallel for
     for (int i = 0; i < n_out; i++)

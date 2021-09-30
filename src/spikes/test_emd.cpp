@@ -8,6 +8,7 @@
 
 int main() {
 
+<<<<<<< Updated upstream
     Distance* d =  new UniformSinkhorn(0.1, 1e-4, 100, true);
 
     int n = 5000;
@@ -28,6 +29,48 @@ int main() {
     //     std::cout << "r: " << real_data(i) << ", s: " << synth_data(perm[i])
     //               << ", cluster x: " << partition[i] << std::endl;
     // }
+=======
+
+    int n = 5;
+    arma::vec first_clus(n, arma::fill::randn);
+    arma::vec second_clus(n, arma::fill::randn);
+    second_clus += 3;
+
+    arma::vec real_data = arma::sort(arma::join_cols(first_clus, second_clus));
+    std::cout << "real_data: " << real_data.t();
+
+    // arma::vec first_clus2(n, arma::fill::randn);
+    // arma::vec second_clus2(n, arma::fill::randn);
+    // first_clus2 += 3;
+    // arma::vec synth_data = arma::join_cols(first_clus2, second_clus2);
+    arma::vec synth_data = arma::reverse(real_data) + 1.0;
+
+
+    Distance<double>* d =  new SortingDistance1d();
+    auto out_sort = d->compute(
+        arma::conv_to<std::vector<double>>::from(real_data),
+        arma::conv_to<std::vector<double>>::from(synth_data));
+    std::cout << "Sorting Dist: " << std::get<0>(out_sort).t() << std::endl;
+
+    Distance<double>* dwass =  new UniformWasserstein<double>(1000);
+    auto out_wass = dwass->compute(
+        arma::conv_to<std::vector<double>>::from(real_data),
+        arma::conv_to<std::vector<double>>::from(synth_data));
+    std::cout << "Wasserstein Dist: " << std::get<0>(out_wass).t() << std::endl;
+    
+    Distance<double>* dsink =  new UniformSinkhorn<double>();
+    auto out_sink = dsink->compute(
+        arma::conv_to<std::vector<double>>::from(real_data),
+        arma::conv_to<std::vector<double>>::from(synth_data));
+    std::cout << "Sinkhorn Dist: " << std::get<0>(out_sink).t() << std::endl;
+
+
+    Distance<double>* dgreen =  new UniformSinkhorn<double>(0.01, 1e-6, 10000, true);
+    auto out_green = dgreen->compute(
+        arma::conv_to<std::vector<double>>::from(real_data),
+        arma::conv_to<std::vector<double>>::from(synth_data));
+    std::cout << "Sinkhorn Dist: " << std::get<0>(out_green).t() << std::endl;
+>>>>>>> Stashed changes
 
     //
 

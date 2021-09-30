@@ -56,3 +56,19 @@ arma::mat pairwise_dist(const std::vector<arma::vec> &x,
     }
     return out;
 }
+
+void pairwise_dist_rowmajor(const std::vector<double> &x,
+                            const std::vector<double> &y, double* out) {
+    for (int i = 0; i < x.size(); ++i) {
+        for (int j = 0; j < y.size(); ++j)
+            out[i*y.size() + j] = std::abs(x[i] - y[j]);
+    }
+}
+
+void pairwise_dist_rowmajor(const std::vector<arma::vec> &x,
+                            const std::vector<arma::vec> &y, double* out) {
+    for (int i = 0; i < x.size(); ++i) {
+        for (int j = 0; j < y.size(); ++j)
+            out[i*y.size() + j] = arma::accu(arma::abs(x[i] - y[j]));
+    }
+}

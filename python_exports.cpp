@@ -21,6 +21,11 @@ using py_return_t_univ = std::tuple<
 using py_return_t_multi = std::tuple<
     pyarr_d, pyarr_i, double, std::vector<std::vector<std::tuple<pyarr_d, pyarr_d>>>>;
 
+using py_return_t_multi_gnk = std::tuple<
+    pyarr_d, pyarr_i, double, 
+    std::vector<std::vector<std::tuple<pyarr_d, pyarr_d, pyarr_d, pyarr_d>>>>;
+
+
 using py_return_t_ts = std::tuple<
     pyarr_d, pyarr_i, double, std::vector<std::vector<pyarr_d>>>;
 
@@ -48,6 +53,7 @@ py_return_t_univ run_univariate(
         abc_mcmc.set_log();
 
     double time = abc_mcmc.run(nrep, int(nrep / 2));
+
 
     std::vector<std::vector<arma::vec>> params_log = abc_mcmc.get_params_log();
     std::vector<std::vector<pyarr_d>> params_log_py(params_log.size());
@@ -114,7 +120,7 @@ py_return_t_multi run_multivariate(
         carma::mat_to_arr(dists), carma::mat_to_arr(parts), time, params_log_py);
 }
 
-py_return_t_multi run_gandk(
+py_return_t_multi_gnk run_gandk(
     pyarr_d data, double rho, int nrep, int nburn, 
     double theta, double sigma, 
     double eps0, double eps_star, 
@@ -123,45 +129,56 @@ py_return_t_multi run_gandk(
     
     MultiGandKKernel kernel(rho);
     std::vector<gandk_param> inits;
-    inits = kernel.make_default_init();
-    // if (inits_.size() == 0)
-    //     inits = kernel.make_default_init();
-    // else {
-    //     for (int i=0; i < inits_.size(); i++) {
-    //         arma::vec mu = carma::arr_to_mat<double>(std::get<0>(inits_[i]));
-    //         arma::mat sigma = carma::arr_to_mat<double>(std::get<1>(inits_[i]));
-    //         inits.push_back(std::make_tuple(mu, sigma));
-    //     }
-    // }
+    // inits = kernel.make_default_init();
+    gandk_param p1 = {
+        arma::vec({-3.0, -3.0}),
+        arma::vec({0.5, 0.5}),
+        arma::vec({-0.9, -0.9}),
+        arma::vec({0.1, 0.1})};
+
+    gandk_param p2 = {
+        arma::vec({3.0, 3.0}),
+        arma::vec({0.5, 0.5}),
+        arma::vec({0.9, 0.9}),
+        arma::vec({0.1, 0.1})};
+
+    inits.push_back(p1);
+    inits.push_back(p2);
 
     MultiGnKAbcPy abc_mcmc(
         to_vectors(carma::arr_to_mat<double>(data)), 
         inits, theta, sigma, eps0, eps_star, dist, kernel);
+
     if (log)
         abc_mcmc.set_log();
 
-    double time = abc_mcmc.run(nrep, nburn);
+    double time = abc_mcmc.run(nrep, nburn, false);
 
-    std::vector<std::vector<gandk_param>> params_log;
-    std::vector<std::vector<std::tuple<pyarr_d, pyarr_d>>> params_log_py(
+    std::cout << "finised running" << std::endl;
+
+
+    std::vector<std::vector<gandk_param>> params_log = abc_mcmc.get_params_log();
+    std::vector<std::vector<std::tuple<pyarr_d, pyarr_d, pyarr_d, pyarr_d>>> params_log_py(
         params_log.size());
     
-    // for (int i = 0; i < params_log.size(); i++) {
-    //     std::vector<std::tuple<pyarr_d, pyarr_d>> curr(params_log[i].size());
-    //     for (int k=0; k < params_log[i].size(); k++) {
-    //         pyarr_d mean = carma::mat_to_arr<double>(std::get<0>(params_log[i][k]));
-    //         pyarr_d sigma_chol = carma::mat_to_arr<double>(std::get<1>(params_log[i][k]));
-    //         curr[k] = std::make_tuple(mean, sigma_chol);
-    //     }
-    //     params_log_py[i] = curr;
-    // }
+    for (int i = 0; i < params_log.size(); i++) {
+        std::vector<std::tuple<pyarr_d, pyarr_d, pyarr_d, pyarr_d>> curr(params_log[i].size());
+        for (int j=0; j < params_log[i].size(); j++) {
+            params_log[i][j].a.t().print();
+            pyarr_d a = carma::mat_to_arr<double>(params_log[i][j].a);
+            pyarr_d b = carma::mat_to_arr<double>(params_log[i][j].b);
+            pyarr_d g = carma::mat_to_arr<double>(params_log[i][j].g);
+            pyarr_d k = carma::mat_to_arr<double>(params_log[i][j].k);
+            curr[j] = std::make_tuple(a, b, g, k);
+        }
+        params_log_py[i] = curr;
+    }
 
     arma::vec dists = abc_mcmc.get_dists();
     arma::imat parts = abc_mcmc.get_parts();
 
     return std::make_tuple(
         carma::mat_to_arr(dists), carma::mat_to_arr(parts), time, params_log_py);
-
 }
 
 // double mu_mean, double mu_sd, double beta_mean,

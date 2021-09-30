@@ -92,12 +92,12 @@ MultiGandKKernel::MultiGandKKernel(double rho): rho(rho) {
 
   mean_a = arma::ones(dim) * 0.0;
   var_a = arma::ones(dim) * 25.0;
-  shape_b = arma::ones(dim) * 4.0;
-  rate_b = arma::ones(dim) * 6.0;
+  shape_b = arma::ones(dim) * 10.0;
+  rate_b = arma::ones(dim) * 10.0;
   mean_g = arma::ones(dim) * 0.0;
   var_g = arma::ones(dim) * 5.0;
-  shape_k = arma::ones(dim) * 5.0;
-  rate_k = arma::ones(dim) * 2.0;
+  shape_k = arma::ones(dim) * 10.0;
+  rate_k = arma::ones(dim) * 10.0;
 
   arma::mat cov = arma::eye(2, 2);
   cov(0, 1) = rho;

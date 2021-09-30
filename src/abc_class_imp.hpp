@@ -31,6 +31,8 @@ AbcPy<data_t, param_t, Kernel>::AbcPy(
     temp_part = part;
     // std::cout << "generating dataset" << std::endl;
     data_synt = kernel.generate_dataset(temp_part, tparam);
+    std::cout << "INIT_DIST: " << std::get<1>(
+        d->compute(data, data_synt)) << std::endl;
     // std::cout << "generating dataset - DONE" << std::endl;
 
 }
@@ -153,15 +155,24 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
         double d = std::get<1>(dist_out);
 
         if (iter % 1000 == 0) {
+            arma::ivec uniq = unique(temp_part);
+            int k1_max = uniq.n_elem;
+            uniq = unique(part);
+            int k2_max = uniq.n_elem;
             std::cout << "Iter: " << iter << " / " << nrep << "; "
                       << "accepted: " << n_accept 
-                      << ", eps: " << eps << ", eps_star: " << eps_star 
-                      << ", dist: " <<  d << std::endl;
+                      << ", eps: " << eps 
+                      << ", dist: " <<  d  
+                      << ", n_clust_prop: " << k1_max
+                      << ", n_clust_acc: " << k2_max << std::endl;
         }
 
 
         if (d < eps) {
             // std::cout << "ACCEPT!" << std::endl;
+            if (log)
+                param_log[n_accept] = param;
+
             n_accept += 1;
 
             part = temp_part;
@@ -177,8 +188,6 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
         if ( (adapt_only_burn && (n_accept < nburn)) || (!adapt_only_burn) )
             update_eps(d, n_accept);
 
-        if (log)
-            param_log[iter] = param;
 
         if (iter > 5000000)
             break;
