@@ -88,7 +88,11 @@ using MultiAbcPy = AbcPy<arma::vec, mvnorm_param, MultiGaussianKernel>;
 
 using MultiGnKAbcPy = AbcPy<arma::vec, gandk_param, MultiGandKKernel>;
 
-using TimeSeriesAbcPy = AbcPy<TimeSeries, arma::vec, TimeSeriesKernel>;
+#ifdef USE_CGAL
+
+    using TimeSeriesAbcPy = AbcPy<TimeSeries, arma::vec, TimeSeriesKernel>;
+
+#endif
 
 #ifdef USE_R
 
