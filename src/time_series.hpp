@@ -3,6 +3,8 @@
 
 #include "include_arma.hpp"
 
+#ifdef USE_CGAL
+
 class TimeSeries {
 protected:
     arma::vec ts;
@@ -40,5 +42,7 @@ double dist(const TimeSeries& ts1, const TimeSeries& ts2,
 
 arma::mat pairwise_dist(const std::vector<TimeSeries> &x,
                         const std::vector<TimeSeries> &y);
+
+#endif
 
 #endif

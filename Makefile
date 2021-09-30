@@ -17,10 +17,10 @@ CFLAGS = \
 	-I$(ROOT_DIR)/lib/gcem/include \
 	-fPIC -DCGAL_DISABLE_ROUNDING_MATH_CHECK=ON \
 	-O3 -ftree-vectorize -funroll-loops \
-	-Wno-reorder -Wno-sign-compare
+	-Wno-reorder -Wno-sign-compare -DUSE_CGAL
 
 LDLIBS = -lstdc++ -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib -L${HOMEBREW_PREFIX}/lib `${PYTHON3}-config --libs`
-LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG `${PYTHON3}-config --ldflags`
+LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG -DUSE_CGAL `${PYTHON3}-config --ldflags`
 
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)

@@ -1,5 +1,7 @@
 #include "time_series.hpp"
 
+#ifdef USE_CGAL
+
 #include <math.h>
 #include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/hilbert_sort.h>
@@ -112,3 +114,5 @@ arma::mat pairwise_dist(const std::vector<TimeSeries> &x,
     }
     return out;
 }
+
+#endif

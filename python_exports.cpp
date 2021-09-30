@@ -167,6 +167,8 @@ py_return_t_multi run_gandk(
 // double mu_mean, double mu_sd, double beta_mean,
 //     double beta_sd, double xi_rate, double omega_sq_rate, double lambda_rate,
 
+#ifdef USE_CGAL
+
 py_return_t_ts run_timeseries(
     pyarr_d data, int nrep, int nburn, double theta, double sigma, 
     double eps0, double eps_star, int p,
@@ -232,6 +234,23 @@ py_return_t_ts run_timeseries(
     return std::make_tuple(
         carma::mat_to_arr(dists), carma::mat_to_arr(parts), time, params_log_py);
 }
+
+#else
+
+py_return_t_ts run_timeseries(
+    pyarr_d data, int nrep, int nburn, double theta, double sigma, 
+    double eps0, double eps_star, int p,
+    std::string dist, 
+    pyarr_d inits_, 
+    bool log) {
+
+    throw std::runtime_error("CGAL not available");
+    py_return_t_ts ret;
+    return ret;
+}
+
+#endif
+
 
 std::vector<double> rand_gandk(double rho, pyarr_d a, pyarr_d b, pyarr_d c, pyarr_d k) {
     MultiGandKKernel kern(rho);
