@@ -79,4 +79,4 @@ $(SPIKES_OBJS): %.o: %.cpp
 # -include $(OBJS:%.o=%.d)
 
 clean:
-	rm $(OBJS) $(SPIKES_OBJS) $(OBJS:%.o=%.d)
+	rm $(OBJS) $(SPIKES_OBJS) $(OBJS:%.o=%.d)  run_gnk.out run_gnk.o
