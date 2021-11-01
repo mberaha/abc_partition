@@ -19,8 +19,8 @@ CFLAGS = \
 	-O3 -ftree-vectorize -funroll-loops \
 	-Wno-reorder -Wno-sign-compare 
 
-LDLIBS = -lstdc++ -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib `${PYTHON3}-config --libs`
-LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG -DUSE_CGAL `${PYTHON3}-config --ldflags`
+LDLIBS = -lstdc++ -larmadillo -lblas -llapack -L${ARMADILLO_DIR}/lib
+LDFLAGS = -std=c++1y -D_REENTRANT -DARMA_DONT_USE_WRAPPER -DARMA_NO_DEBUG -DUSE_CGAL
 
 ifeq (${UNAME_S},Darwin)
 	CXX = clang++
@@ -56,12 +56,6 @@ all: $(SPIKES_EXECS) generate_pybind
 
 generate_lib: $(OBJS)
 	g++ -shared $(OBJS) -o libabc.so $(LDLIBS)
-
-generate_pybind: $(OBJS)
-	$(CXX) -shared $(CFLAGS) -I$(SRC_DIR)/lib/carma/include/ \
-		 `${PYTHON3} -m pybind11 --includes` \
-		python_exports.cpp -o abcpp`${PYTHON3}-config --extension-suffix` \
-		$(OBJS) $(LDLIBS)
 
 run_gnk: run_gnk.o $(OBJS)
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o run_gnk.out $(OBJS) $< $(LDLIBS)
