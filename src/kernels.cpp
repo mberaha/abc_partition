@@ -206,12 +206,12 @@ arma::vec TimeSeriesKernel::sample_prior()
     arma::vec out(5);
     out(0) = arma::randn() * mu_sd + mu_mean;
     out(1) = arma::randn() * beta_sd + beta_mean;
-    out(2) = 1.0;
-    out(3) = 1.0;
-    out(4) = 1.0;
-    // out(2) = arma::randg(arma::distr_param(1.0, 1.0 / xi_rate));
-    // out(3) = arma::randg(arma::distr_param(1.0, 1.0 / omega_sq_rate));
-    // out(4) = arma::randg(arma::distr_param(1.0, 1.0 / lambda_rate));
+    // out(2) = 1.0;
+    // out(3) = 1.0;
+    // out(4) = 1.0;
+    out(2) = arma::randg(arma::distr_param(1.0, 1.0 / xi_rate));
+    out(3) = arma::randg(arma::distr_param(1.0, 1.0 / omega_sq_rate));
+    out(4) = arma::randg(arma::distr_param(1.0, 1.0 / lambda_rate));
     return out;
 }
 
