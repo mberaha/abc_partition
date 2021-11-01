@@ -27,7 +27,7 @@ ifeq (${UNAME_S},Darwin)
 	CFLAGS += -I${HOMEBREW_PREFIX}/include  -DUSE_CGAL
 	LDLIBS += -L${HOMEBREW_PREFIX}/lib 
 else 
-	CFLAGS += -fopenmp
+	CFLAGS += -fopenmp -DUSE_CGAL
 endif
 
 OUR_SRCS_T = $(wildcard $(SRC_DIR)/*.cpp)
@@ -66,6 +66,8 @@ generate_pybind: $(OBJS)
 run_gnk: run_gnk.o $(OBJS)
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o run_gnk.out $(OBJS) $< $(LDLIBS)
 	
+run_ts: run_ts.o $(OBJS)
+	$(CXX) $(CFLAGS) $(LDFLAGS) -o run_ts.out $(OBJS) $< $(LDLIBS)
 
 $(SPIKES_EXECS): %.out: %.o $(OBJS)
 	$(CXX) $(CFLAGS) $(LDFLAGS) -o $@ $(OBJS) $< $(LDLIBS)
@@ -79,4 +81,5 @@ $(SPIKES_OBJS): %.o: %.cpp
 # -include $(OBJS:%.o=%.d)
 
 clean:
-	rm $(OBJS) $(SPIKES_OBJS) $(OBJS:%.o=%.d)  run_gnk.out run_gnk.o
+	rm $(OBJS) $(SPIKES_OBJS) $(OBJS:%.o=%.d)  run_gnk.out run_gnk.o \
+	run_ts.out run_ts.o

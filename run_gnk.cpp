@@ -47,20 +47,20 @@ int main() {
 
 	#pragma omp parallel for
 	for (int i = 0; i < nrep; i++) {
-            std::vector<arma::vec> data = generate_data(dp, param1, param2);
-                MultiGnKAbcPy abc(
-                        data, 
-                        inits, 
-                        1.0, 0.1, 100, 0.5,
-                        dist, kern);
-                double time = abc.run(20000, 10000, false);
+        std::vector<arma::vec> data = generate_data(dp, param1, param2);
+            MultiGnKAbcPy abc(
+                    data, 
+                    inits, 
+                    1.0, 0.1, 100, 0.5,
+                    dist, kern);
+        double time = abc.run(20000, 10000, false);
 		times(i) = time;
-                arma::imat parts = abc.get_parts();
+        arma::imat parts = abc.get_parts();
 
-                std::string outfile = out_dir + dist + "_" + \
-                    std::to_string(i) + "_" + std::to_string(dp) + ".csv";
-                
-                parts.save(outfile, arma::csv_ascii);
+        std::string outfile = out_dir + dist + "_" + \
+            std::to_string(i) + "_" + std::to_string(dp) + ".csv";
+        
+        parts.save(outfile, arma::csv_ascii);
 
         }
 	std::string outfile_time = out_dir + "times_" + dist + "_" + std::to_string(dp) + ".csv";
