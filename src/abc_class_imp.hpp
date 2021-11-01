@@ -154,7 +154,7 @@ double AbcPy<data_t, param_t, Kernel>::run(int nrep, int nburn, bool adapt_only_
         std::tuple<arma::uvec, double> dist_out = d->compute(data, data_synt);
         double d = std::get<1>(dist_out);
 
-        if (iter % 1000 == 0) {
+        if (iter % 20000 == 0) {
             arma::ivec uniq = unique(temp_part);
             int k1_max = uniq.n_elem;
             uniq = unique(part);
