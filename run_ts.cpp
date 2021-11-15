@@ -26,8 +26,18 @@ std::vector<TimeSeries> load_data(std::string file_name) {
     return ts_vec;
 }
 
+std::vector<TimeSeries> generate_data(int data_per_clus) {
+    std::vector<TimeSeries> ts_vec(data_per_clus * 2); 
+    TimeSeriesKernel kernel(50);
+    for (int i = 0; i < data_per_clus; i++) {
+        ts_vec[i] = kernel.generate_single(1.5, 2.75, 1.0, 2.5, 1.0);
+        ts_vec[i + data_per_clus] = kernel.generate_single(1.0, 2.0, 0.6, 1, 0.4);
+    }
+    return ts_vec;
+}
+
 double run_one(ts_param params, int i, std::string data_dir) {
-    std::vector<TimeSeries> ts_vec = load_data(data_dir + "log_ret_data.csv");
+    std::vector<TimeSeries> ts_vec = generate_data(25);
 
     TimeSeriesKernel kernel(
         params.mu_mean, params.mu_sd, params.beta_mean, params.beta_sd, 
@@ -96,5 +106,4 @@ int main() {
     for (int i=0; i < params.size(); i++) {
         run_one(params[i], i, data_dir);
     }
-
 }
