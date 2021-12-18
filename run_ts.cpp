@@ -30,8 +30,8 @@ std::vector<TimeSeries> generate_data(int data_per_clus) {
     std::vector<TimeSeries> ts_vec(data_per_clus * 2); 
     TimeSeriesKernel kernel(50);
     for (int i = 0; i < data_per_clus; i++) {
-        ts_vec[i] = kernel.generate_single(1.5, 2.75, 1.0, 2.5, 1.0);
-        ts_vec[i + data_per_clus] = kernel.generate_single(1.0, 2.0, 0.6, 1, 0.4);
+        ts_vec[i] = kernel.generate_single(1.5, 0.6, 0.75, 1.2, 0.6);
+        ts_vec[i + data_per_clus] = kernel.generate_single(1.0, -0.6, 0.75, 0.6, 0.4);
     }
     return ts_vec;
 }
@@ -44,7 +44,9 @@ double run_one(ts_param params, int i, std::string data_dir) {
         params.xi_rate, params.omega_rate,
         params.lambda_rate, ts_vec[0].get_ts().n_elem);
 
-    std::vector<arma::vec> inits = kernel.make_default_init();
+    std::vector<arma::vec> inits = {
+        arma::vec({1.5, 0.6, 0.75, 1.2, 0.6}),
+        arma::vec({1.0, -0.6, 0.75, 0.6, 0.4})};
 
     TimeSeriesAbcPy abc(ts_vec, inits, 1.0, 0.1,
                         100, 0.5,  "wasserstein", kernel);
@@ -61,46 +63,7 @@ int main() {
     std::string data_dir = "data/";
     std::vector<ts_param> params;
 
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 1.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 2.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 5.0, 5.0, 5.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 5.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 5.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 1.0, 5.0, 1.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 2.0, 5.0, 2.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 1.0, 1.0, 5.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 2.0, 2.0, 2.0, 5.0});
-
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 1.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 2.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 5.0, 5.0, 5.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 5.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 5.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 1.0, 5.0, 1.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 2.0, 5.0, 2.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 1.0, 1.0, 5.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 2.0, 2.0, 2.0, 5.0});
-
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 1.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 2.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 5.0, 5.0, 5.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 5.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 5.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 1.0, 5.0, 1.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 2.0, 5.0, 2.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 1.0, 1.0, 5.0});
-    params.push_back(ts_param{0.0, 2.0, 0.0, 5.0, 2.0, 2.0, 5.0});
-
-    
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 1.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 2.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 5.0, 5.0, 5.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 5.0, 1.0, 1.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 5.0, 2.0, 2.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 1.0, 5.0, 1.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 2.0, 5.0, 2.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 1.0, 1.0, 5.0});
-    params.push_back(ts_param{0.0, 5.0, 0.0, 5.0, 2.0, 2.0, 5.0});
+    params.push_back({1.0, 4.0, 1.0, 4.0, 2.0, 1.0, 1.0});
 
     #pragma omp parallel for
     for (int i=0; i < params.size(); i++) {

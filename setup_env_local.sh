@@ -1,5 +1,0 @@
-export HOMEBREW_PREFIX="/usr/local/Homebrew"
-export CGAL_DIR=${HOMEBREW_PREFIX}"/Cellar/cgal/5.3"
-export PYTHON3=${HOMEBREW_PREFIX}"/Cellar/python@3.9/3.9.6/bin/python3"
-export ARMADILLO_DIR=${HOMEBREW_PREFIX}"/Cellar/armadillo/10.6.2"
-export BOOST_DIR=${HOMEBREW_PREFIX}"/Cellar/boost/1.76.0"
