@@ -17,8 +17,7 @@ std::vector<arma::vec> generate_data(
 
 
 int main() {    
-    
-   std::string dist = "sinkhorn";
+   std::vector<std::string> dists = {"wasserstein", "sinkhorn"};
 
    gandk_param param1 = {
         arma::vec({-3, -3}), 
@@ -36,34 +35,37 @@ int main() {
 
     MultiGandKKernel kern(0.5);
 
-    int nrep = 25;
+    int nrep = 50;
     std::vector<int> data_per_clus = {50, 125};
 
     std::string out_dir = "./results/";
     std::vector<gandk_param> inits = kern.make_default_init();
 
     for (auto& dp : data_per_clus) {
-	arma::vec times(nrep);
+	arma::mat times(nrep, dists.size());
 
-	#pragma omp parallel for
 	for (int i = 0; i < nrep; i++) {
-        std::vector<arma::vec> data = generate_data(dp, param1, param2);
-            MultiGnKAbcPy abc(
+            std::vector<arma::vec> data = generate_data(dp, param1, param2);
+            
+	    for (int l=0; l < dists.size(); l++)  {
+		std::string dist = dists[l];
+		MultiGnKAbcPy abc(
                     data, 
                     inits, 
                     1.0, 0.1, 100, 0.5,
                     dist, kern);
         double time = abc.run(20000, 10000, false);
-		times(i) = time;
-        arma::imat parts = abc.get_parts();
+		times(i, l) = time;
+                arma::imat parts = abc.get_parts();
 
-        std::string outfile = out_dir + dist + "_" + \
-            std::to_string(i) + "_" + std::to_string(dp) + ".csv";
-        
-        parts.save(outfile, arma::csv_ascii);
+                std::string outfile = out_dir + dist + "_" + \
+                std::to_string(i) + "_" + std::to_string(dp) + ".csv";
 
-        }
-	std::string outfile_time = out_dir + "times_" + dist + "_" + std::to_string(dp) + ".csv";
+                parts.save(outfile, arma::csv_ascii);
+          }
+	
+	}
+	std::string outfile_time = out_dir + "times_" + std::to_string(dp) + ".csv";
 	times.save(outfile_time, arma::csv_ascii);
     }
     return -1;
